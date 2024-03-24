@@ -1,6 +1,6 @@
 
 
-mod transacton_struct;
+
 
 use crate::Transaction;
 

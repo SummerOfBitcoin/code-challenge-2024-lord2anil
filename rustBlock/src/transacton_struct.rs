@@ -4,41 +4,41 @@ use serde::{Deserialize};
 #[derive(Debug, Deserialize)]
 #[derive(Clone)]
 pub struct Transaction {
-    version: u32,
-    locktime: u32,
-    vin: Vec<TransactionInput>,
-    vout: Vec<TransactionOutput>,
+    pub version: u32,
+    pub  locktime: u32,
+    pub vin: Vec<TransactionInput>,
+    pub vout: Vec<TransactionOutput>,
 }
 
 #[derive(Debug, Deserialize)]
 #[derive(Clone)]
-struct TransactionInput {
-    txid: String,
-    vout: u32,
-    prevout: PrevOut,
-    scriptsig: String,
-    scriptsig_asm: String,
-    witness: Vec<String>,
-    is_coinbase: bool,
-    sequence: u32,
+pub struct TransactionInput {
+    pub  txid: String,
+    pub  vout: u32,
+    pub  prevout: PrevOut,
+    pub scriptsig: String,
+    pub scriptsig_asm: String,
+    pub witness: Vec<String>,
+    pub is_coinbase: bool,
+    pub sequence: u32,
 }
 
 #[derive(Debug, Deserialize)]
 #[derive(Clone)]
-struct PrevOut {
-    scriptpubkey: String,
-    scriptpubkey_asm: String,
-    scriptpubkey_type: String,
-    scriptpubkey_address: String,
-    value: u64,
+pub struct PrevOut {
+    pub  scriptpubkey: String,
+    pub scriptpubkey_asm: String,
+    pub scriptpubkey_type: String,
+    pub scriptpubkey_address: String,
+    pub value: u64,
 }
 
 #[derive(Debug, Deserialize)]
 #[derive(Clone)]
-struct TransactionOutput {
-    scriptpubkey: String,
-    scriptpubkey_asm: String,
-    scriptpubkey_type: String,
-    scriptpubkey_address: String,
-    value: u64,
+pub struct TransactionOutput {
+   pub scriptpubkey_asm: String,
+   pub scriptpubkey_type: String,
+   pub scriptpubkey_address: String,
+   pub scriptpubkey: String,
+   pub value: u64,
 }
