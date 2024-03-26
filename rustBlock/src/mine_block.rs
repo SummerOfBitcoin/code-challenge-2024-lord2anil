@@ -44,6 +44,6 @@ pub fn mine_block(mut block: Block, difficulty_target: &str) -> Block {
     // Calculate the total fee
     let transactions = &block.transactions;
     block.total_fee = calculate_total_fee(transactions);
-
+    block.header=hex::encode("0000ffff00000000000000000000000000000000000000000000000000000000");
     block
 }
