@@ -1,28 +1,211 @@
+use core::panic;
 
+use ripemd::Ripemd160;
+use secp256k1::ecdsa::Signature;
+use secp256k1::{Message, PublicKey, Secp256k1};
+use sha2::{Digest, Sha256};
 
-
-
+use crate::transacton_struct::TransactionInput;
 use crate::Transaction;
+use byteorder::{LittleEndian, WriteBytesExt};
 
 pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
     let mut valid_transactions: Vec<Transaction> = Vec::new();
-    
     for transaction in transactions {
         if is_valid_transaction(transaction) {
             valid_transactions.push(transaction.clone());
         }
     }
-    
+
     valid_transactions
 }
 
-fn is_valid_transaction(_transaction: &Transaction) -> bool {
-    // Implement validation logic for the transaction
-    // You can define various rules to check for validity
-    // For example, checking that inputs reference valid previous outputs,
-    // signatures are correct, and outputs adhere to specific rules
+
+fn convert_to_4bytes(num:u32)->String{
+
+     // Create a vector to hold the packed bytes
+     let mut buffer = Vec::new();
+
+     // Write the value into the buffer in little-endian format
+     buffer.write_u32::<LittleEndian>(num).unwrap();
+ 
+     // Convert the bytes to a hexadecimal string
+     let hex_string = hex::encode(&buffer);
+        hex_string
+}
+fn convert_to_8bytes(num:u64)->String{
+
+     // Create a vector to hold the packed bytes
+     let mut buffer = Vec::new();
+
+     // Write the value into the buffer in little-endian format
+     buffer.write_u64::<LittleEndian>(num).unwrap();
+ 
+     // Convert the bytes to a hexadecimal string
+     let hex_string = hex::encode(&buffer);
+        hex_string
+}
+fn verify_signature(t: Transaction, idx: usize) -> bool {
+    let mut transaction_data = String::new();
+    // 4 bits version, in little endian
+    transaction_data.push_str(
+        &convert_to_4bytes(t.version)
+    );
     
-    // For simplicity, let's assume all transactions are valid for now
+ 
+    //  1 byte input count in hexadicimal number, convert to hexadicimal
+    let input_count = t.vin.len();
+    // convert a number into  hexadicimal string ex 11->b
+    transaction_data.push_str(format_args!("{:02x}", [input_count][0]).to_string().as_str());
+   
+    //public key hash of idx input
+    let scriptpubkey_hash = t.vin[idx]
+        .prevout
+        .scriptpubkey_asm
+        .split(" ")
+        .collect::<Vec<&str>>()[3];
+   
+    for i in 0..t.vin.len() {
+        if i == idx {
+            // 32 bytes prevout hash txid as little endian, convert to little endian
+            // Decode the hex string to a byte array.
+            let hex_string = t.vin[i].txid.clone();
+            let bytes = hex::decode(hex_string).unwrap();
+
+            // Reverse the order of the bytes.
+            let reversed_bytes = bytes.iter().rev().cloned().collect::<Vec<u8>>();
+
+            // Convert the reversed bytes to a string.
+            let reversed_hex_string = hex::encode(reversed_bytes);
+            transaction_data.push_str(&reversed_hex_string);
+
+            // 4 bytes prevout index little endian
+
+            let vout = t.vin[i].vout;
+            transaction_data.push_str(
+                &convert_to_4bytes(vout)
+            );
+
+            // 1 byte scriptpubkey length\
+            let pub_key_len =t.vin[i].prevout.scriptpubkey.len() / 2;
+            transaction_data.push_str(format_args!("{:02x}", [pub_key_len][0]).to_string().as_str());
+            //pub key
+            transaction_data.push_str(&t.vin[i].prevout.scriptpubkey);
+
+            // 4 bytes sequence, is always ffffffff
+            transaction_data.push_str("ffffffff");
+        } else {
+            // 32 bytes prevout hash txid
+            transaction_data.push_str(&t.vin[i].txid);
+            // 4 bytes prevout index
+            let vout = t.vin[i].vout;
+            transaction_data.push_str(
+                &convert_to_4bytes(vout)
+            );
+            // 1 byte scriptSig length
+            // need to remove the scriptsig , so length is 0
+            transaction_data.push_str("00");
+            // 4 bytes sequence, is always ffffffff
+            transaction_data.push_str("ffffffff");
+        }
+    }
+    // for output
+
+   
+    let output_count = t.vout.len();
+    transaction_data.push_str(format_args!("{:02x}", [output_count][0]).to_string().as_str());
+    for i in 0..t.vout.len() {
+        // 8 bytes amount in little endian
+        let amount = t.vout[i].value;
+        transaction_data.push_str(
+            &convert_to_8bytes(amount)
+        );
+        // 1 byte scriptPubKey length
+        let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;
+        transaction_data.push_str(format_args!("{:02x}", [scriptpubkey_len][0]).to_string().as_str());
+        // scriptPubKey
+        transaction_data.push_str(&t.vout[i].scriptpubkey);
+    }
+        transaction_data.push_str("0000000001000000");
+        
+
+        // sha256 hash of transaction data
+    //   println!("{}",transaction_data);
+
+        if transaction_data.len() % 2 != 0 {
+            transaction_data = format!("0{}", transaction_data) ;
+        }
+        let tt=transaction_data.clone();
+        let transaction_hash = hex::decode(transaction_data).unwrap_or_else(|_e| {
+
+         panic!("Error: {}", tt.len());
+        });
+        let transaction_hash = Sha256::digest(transaction_hash);
+        // let transaction_hash = Sha256::digest(transaction_hash);
+
+        let scriptsig_asm1 = t.vin[idx].scriptsig_asm.clone();
+    let binding = scriptsig_asm1.split(" ").collect::<Vec<&str>>()[1];
+   
+
+    let signature_bytes = hex::decode(binding).unwrap(); // Replace hex with your encoding format if different
+
+    // signature into der encoded byte slice
+    let signature = match Signature::from_der_lax(&signature_bytes) {
+        Ok(signature) => signature,
+        Err(e) => panic!("Error: {:?}", e),
+    };
+
+    let binding = t.vin[idx].scriptsig_asm.split(" ").collect::<Vec<&str>>();
+    let pub_key = binding.last().unwrap();
+    let pub_key = hex::decode(pub_key).unwrap();
+    let pub_key = PublicKey::from_slice(&pub_key).unwrap();
+    let secp = Secp256k1::verification_only();
+    let message = Message::from_digest_slice(&Sha256::digest(transaction_hash)).unwrap();
+    secp.verify_ecdsa(&message, &signature, &pub_key).is_ok()
+    // println!("{:?}",pub_key);
+}
+fn p2pkh_validate(t: &Transaction, idx: usize) -> bool {
+    let scriptsig_asm1 = t.vin[idx].scriptsig_asm.clone();
+    let binding = scriptsig_asm1.split(" ").collect::<Vec<&str>>();
+    let pub_key = binding.last().unwrap();
+    let pub_key = hex::decode(pub_key).unwrap();
+    let pub_key_hash256 = Sha256::digest(pub_key);
+    let pub_key_ripemd160 = Ripemd160::digest(&pub_key_hash256);
+    let pub_key_ripemd160_hex = hex::encode(pub_key_ripemd160);
+    let pub_key_hash = t.vin[idx]
+        .prevout
+        .scriptpubkey_asm
+        .split(" ")
+        .collect::<Vec<&str>>()[3];
+    // println!("{}   {}", pub_key_ripemd160_hex, pub_key_hash);
+    if pub_key_ripemd160_hex != pub_key_hash {
+        return false;
+    }
+    if !verify_signature(t.clone(), idx) {
+        return false;
+    }
+
+    
     true
 }
 
+
+
+fn is_valid_transaction(t: &Transaction) -> bool {
+    if t.vin.len() == 0 || t.vout.len() == 0 {
+        return false;
+    }
+
+    for i in 0..t.vin.len() {
+        // println!("{}",t.vin[i].prevout.scriptpubkey_type);
+        if t.vin[i].prevout.scriptpubkey_type == "p2pkh".to_string() {
+            if !p2pkh_validate(t, i) {
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
+    true
+}
