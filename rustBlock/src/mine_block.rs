@@ -16,7 +16,7 @@ fn calculate_transaction_fee(transaction: &Transaction) -> u64 {
 }
 
 pub fn mine_block(mut block: Block, difficulty_target: &str) -> Block {
-    let mut hasher = Sha256::new();
+    let  hasher = Sha256::new();
     let mut x=1000;
     loop {
         x=x-1;

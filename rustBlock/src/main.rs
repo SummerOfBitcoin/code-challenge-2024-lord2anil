@@ -23,38 +23,48 @@ fn main() {
     for entry in std::fs::read_dir(folder_path).unwrap() {
         x=x+1   ;
         let entry = entry.unwrap();
-        let path = entry.path();
-        let mut file = File::open(path).unwrap();
+        let  path = entry.path();
+        let path_clone = path.clone(); // Clone the path variable
+        let mut file = File::open(path_clone).unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
+        
         let transaction: Transaction = match serde_json::from_str::<Transaction>(&data) {
+            
             Ok(result) => result,
-            Err(e) => {
+            Err(_e) => {
+                
+            //    println!("{}",e);
                 continue;
             }
+
+           
         };
         
         transactions.push(transaction);
     }
+   
     transactions= validate_transactions(&transactions).clone();
     println!("{:?} {x}", transactions.len());
-    // let coinbase_transaction: Transaction = construct_coinbase_transaction(1000000, 50000); // Example block reward and transaction fees
-    let block = assemble_block(transactions);
+
+
+ //   // let coinbase_transaction: Transaction = construct_coinbase_transaction(1000000, 50000); // Example block reward and transaction fees
+  //  let block = assemble_block(transactions);
 
     // Print the assembled block
     // println!("{:#?}", block);
-    let difficulty_target = "0000ffff00000000000000000000000000000000000000000000000000000000";
+//   let difficulty_target = "0000ffff00000000000000000000000000000000000000000000000000000000";
 
     // Mine the block
-    let mined_block = mine_block(block, difficulty_target);
+  //  let mined_block = mine_block(block, difficulty_target);
 
     // Print the mined block
     // println!("{:#?}", mined_block);
-    let coinbase_txid = "123abc";
-    let transaction_txids = vec!["456def".to_string(), "789ghi".to_string()];
+  //  let coinbase_txid = "123abc";
+   // let transaction_txids = vec!["456def".to_string(), "789ghi".to_string()];
 
     // Write block data to output.txt file
-    write_to_output_file(&mined_block, coinbase_txid, &transaction_txids);
+   // write_to_output_file(&mined_block, coinbase_txid, &transaction_txids);
 }
 
    
