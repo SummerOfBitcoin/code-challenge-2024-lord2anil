@@ -1,7 +1,9 @@
 
 use serde::{Deserialize};
+use std::fmt::format;
 use std::fs::File;
-use std::io::Read;
+use std::io::{BufRead, Read};
+use std::path::Path;
 use serde_json;
 mod validate_transactions;
 mod assemble_block;
@@ -14,17 +16,22 @@ mod transacton_struct;
 use transacton_struct::Transaction;
 mod mine_block;
 use mine_block::*;
-
+use std::path::{ PathBuf};
 fn main() {
-    let folder_path= "../mempool";
+    
+
+    let folder_path = "../mempool2";
 
     let mut transactions: Vec<Transaction> = Vec::new();
+
     let mut x=0;
+
     for entry in std::fs::read_dir(folder_path).unwrap() {
         x=x+1   ;
         let entry = entry.unwrap();
         let  path = entry.path();
         let path_clone = path.clone(); // Clone the path variable
+       
         let mut file = File::open(path_clone).unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
@@ -43,6 +50,48 @@ fn main() {
         
         transactions.push(transaction);
     }
+  
+
+    // let sample_file_name="../t.txt";
+    
+    
+    // // Read the file names from t.txt, line by line
+    // let file = File::open(sample_file_name).unwrap();
+    // let reader = std::io::BufReader::new(file);
+    // let mut valid_file_names: Vec<PathBuf> = Vec::new();
+
+    // for line in reader.lines() {
+    //     let line = line.unwrap();
+    //     let pp = format!("../mempool/{}", line);
+    //     let path = PathBuf::from(pp); // Construct PathBuf directly
+    //     valid_file_names.push(path);
+    // }
+    // valid_file_names.pop();
+    // let mut p=true;
+    // for path in valid_file_names {
+    //    if p==true {
+    //        p=false;
+    //        continue;
+    //    }
+    //   x=x+1;
+    //     let mut file = File::open(path).unwrap();
+    //     let mut data = String::new();
+    //     file.read_to_string(&mut data).unwrap();
+        
+    //     let transaction: Transaction = match serde_json::from_str::<Transaction>(&data) {
+            
+    //         Ok(result) => result,
+    //         Err(_e) => {
+                
+    //         //    println!("{}",e);
+    //             continue;
+    //         }
+
+           
+    //     };
+        
+    //     transactions.push(transaction);
+    // }
    
     transactions= validate_transactions(&transactions).clone();
     println!("{:?} {x}", transactions.len());
