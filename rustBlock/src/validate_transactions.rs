@@ -250,7 +250,7 @@ fn is_valid_transaction(t: &Transaction) -> bool {
         if t.vin[i].prevout.scriptpubkey_type == "p2pkh".to_string() {
             
             if !p2pkh_validate(t, i) {
-                println!("invalid signature");
+                // println!("invalid signature");
                 
                 return false;
             }
