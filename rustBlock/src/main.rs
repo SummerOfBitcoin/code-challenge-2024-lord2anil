@@ -17,10 +17,126 @@ use transacton_struct::Transaction;
 mod mine_block;
 use mine_block::*;
 use std::path::{ PathBuf};
+
+fn serialize_block_header(block: &Block) -> String {
+    // You'll need to implement this based on your Block structure's format
+     format!(
+         "{}{}{}{}{}{}",
+         &block.version,
+         &block.prev_block_hash,
+         &block.merkle_root,
+         &block.timestamp,
+         &block.bits,
+         &block.nonce
+     )
+ }
+ fn convert_to_4bytes(num:u32)->String{
+
+    let mut bytes = vec![];
+    bytes.extend_from_slice(&(num as u32).to_le_bytes());
+ 
+     // Convert the bytes to a hexadecimal string
+     let hex_string = hex::encode(&bytes);
+        hex_string
+}
+
+fn int_to_varint(n: u64) -> String {
+    
+    if n <= 252 {  // 0xFC
+        return hex::encode (vec![n as u8]);
+    } else if n <= 65535 {  // 0xFFFF
+        let mut bytes = vec![0xFD];
+        bytes.extend_from_slice(&(n as u16).to_le_bytes());
+        return  hex::encode (bytes);
+    } else if n <= 4294967295 {  // 0xFFFFFFFF
+        let mut bytes = vec![0xFE];
+        bytes.extend_from_slice(&(n as u32).to_le_bytes());
+        return hex::encode (bytes);
+    } else {
+        let mut bytes = vec![0xFF];
+        bytes.extend_from_slice(&n.to_le_bytes());
+        return hex::encode (bytes);
+    }
+}
+fn convert_to_8bytes(num:u32)->String{
+
+    let mut bytes = vec![];
+    bytes.extend_from_slice(&(num as u64).to_le_bytes());
+ 
+     // Convert the bytes to a hexadecimal string
+     let hex_string = hex::encode(&bytes);
+        hex_string
+}
+
+ fn serialize_coinbase_transaction(t: &Transaction) -> String {
+
+    let mut serialized_tx = String::new();
+    // Serialize the version
+    serialized_tx.push_str(&convert_to_4bytes(t.version));
+    // Serialize the number of inputs
+    serialized_tx.push_str(&int_to_varint(t.vin.len() as u64));
+    // Serialize the inputs
+    for i in 0..t.vin.len() {
+      
+            // 32 bytes prevout hash txid as little endian, convert to little endian
+            // Decode the hex string to a byte array.
+            let hex_string = t.vin[i].txid.clone();
+            let bytes = hex::decode(hex_string).unwrap();
+
+            // Reverse the order of the bytes.
+            let reversed_bytes = bytes.iter().rev().cloned().collect::<Vec<u8>>();
+
+            // Convert the reversed bytes to a string.
+            let reversed_hex_string = hex::encode(reversed_bytes);
+            serialized_tx.push_str(&reversed_hex_string);
+
+            // 4 bytes prevout index little endian
+            
+
+            let vout = t.vin[i].vout;
+            serialized_tx.push_str(
+                &convert_to_4bytes(vout)
+            );
+
+            // 1 byte scriptpubkey length\
+            let pub_key_len =t.vin[i].prevout.scriptpubkey.len() / 2;
+            serialized_tx.push_str(int_to_varint(pub_key_len as u64).as_str());
+            //pub key
+            serialized_tx.push_str(&t.vin[i].prevout.scriptpubkey);
+
+            // 4 bytes sequence, is always ffffffff
+            serialized_tx.push_str(convert_to_4bytes(t.vin[i].sequence).as_str());
+
+       
+    }
+    // for output
+
+    let output_count = t.vout.len();
+    serialized_tx.push_str(&int_to_varint(output_count as u64));
+    for i in 0..t.vout.len() {
+        // 8 bytes amount in little endian
+        let amount = t.vout[i].value;
+        serialized_tx.push_str(
+            &convert_to_8bytes(amount as u32)
+        );
+        // 1 byte scriptPubKey length
+        let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;
+        serialized_tx.push_str(int_to_varint(scriptpubkey_len as u64).as_str());
+        // scriptPubKey
+        serialized_tx.push_str(&t.vout[i].scriptpubkey);
+    }
+    serialized_tx.push_str(&convert_to_4bytes(t.locktime));
+    
+        serialized_tx.push_str("01000000");
+    serialized_tx
+
+  
+}
+ 
 fn main() {
     
 
-    let folder_path = "../mempool2";
+    let folder_path = "../mempool";
 
     let mut transactions: Vec<Transaction> = Vec::new();
 
@@ -97,31 +213,222 @@ fn main() {
     println!("{:?} {x}", transactions.len());
 
 
- //   // let coinbase_transaction: Transaction = construct_coinbase_transaction(1000000, 50000); // Example block reward and transaction fees
-  //  let block = assemble_block(transactions);
+ let coinbase_transaction: Transaction = construct_coinbase_transaction(6, 1,"03178e5f7ba2f41f449ce90ba0635bad19bbb17d7e634ed50f96c4f956e704d188"); // Example block reward and transaction fees
+    transactions.insert(0, coinbase_transaction);
+    let block = assemble_block(transactions);
+   
 
-    // Print the assembled block
-    // println!("{:#?}", block);
-//   let difficulty_target = "0000ffff00000000000000000000000000000000000000000000000000000000";
+  
+
+  let difficulty_target = "0000ffff00000000000000000000000000000000000000000000000000000000";
 
     // Mine the block
-  //  let mined_block = mine_block(block, difficulty_target);
+   let mined_block = mine_block(block, difficulty_target.to_string());
+
 
     // Print the mined block
-    // println!("{:#?}", mined_block);
-  //  let coinbase_txid = "123abc";
-   // let transaction_txids = vec!["456def".to_string(), "789ghi".to_string()];
+    println!("hello this {:#?}", mined_block.nonce);
+
+    // generate the block header
+    let block_header = serialize_block_header(&mined_block);
+
+
+    // Serialize the coinbase transaction
+    let coinbase_tx = serialize_coinbase_transaction(&mined_block.transactions[0]);
+    let txids = calculate_txid(&mined_block.transactions);
+
+
+
 
     // Write block data to output.txt file
-   // write_to_output_file(&mined_block, coinbase_txid, &transaction_txids);
+   write_to_output_file(block_header, &coinbase_tx, txids);
 }
 
+
+
+fn double_sha256(data:String) -> String {
+    // Convert the hexadecimal string to a byte array.
+    let bytes = hex::decode(data).unwrap();
+
+    // Calculate the SHA-256 hash of the byte array.
+    let hash = Sha256::digest(&bytes);
+
+    // Calculate the double SHA-256 hash of the byte array.
+    let double_hash = Sha256::digest(&hash);
+
+    // Convert the hash to a hexadecimal string.
+    let hex_string = hex::encode(double_hash);
+
+    hex_string
+
+}
+
+fn txid_data(t: Transaction) -> String {
+    
+    // 4 bits version, in little endian
+    // transaction_data.push_str(
+    //     &convert_to_4bytes(t.version)
+    // );
+    
+
+ 
+
+    let mut transaction_data = String::new();
+     
+    //  1 byte input count in hexadicimal number, convert to hexadicimal
+    let input_count = t.vin.len();
+
+    
+    transaction_data.push_str(&int_to_varint(input_count as u64));
+    // if len of vin is greater 255, then use verint
+    
+   
+     let mut  is_segwit = false;
+
+     let mut witness = String::new();
+
+   
+    for i in 0..t.vin.len() {
+       
+        if t.vin[i].prevout.scriptpubkey_type=="p2pkh".to_string() {
+            // 32 bytes prevout hash txid as little endian, convert to little endian
+            // Decode the hex string to a byte array.
+            let hex_string = t.vin[i].txid.clone();
+            let bytes = hex::decode(hex_string).unwrap();
+
+            // Reverse the order of the bytes.
+            let reversed_bytes = bytes.iter().rev().cloned().collect::<Vec<u8>>();
+
+            // Convert the reversed bytes to a string.
+            let reversed_hex_string = hex::encode(reversed_bytes);
+            transaction_data.push_str(&reversed_hex_string);
+
+            // 4 bytes prevout index little endian
+            
+            
+            let vout = t.vin[i].vout;
+            transaction_data.push_str(
+                &convert_to_4bytes(vout)
+            );
+
+            // 1 byte scriptpubkey length\
+            let pub_key_len =t.vin[i].scriptsig.len() / 2;
+            transaction_data.push_str(int_to_varint(pub_key_len as u64).as_str());
+            //pub key
+            transaction_data.push_str(&t.vin[i].scriptsig);
+
+            // 4 bytes sequence, is always ffffffff
+            transaction_data.push_str(convert_to_4bytes(t.vin[i].sequence).as_str());
+
+            witness.push_str("00");
+
+        } else {
+            is_segwit = true;
+             // 32 bytes prevout hash txid as little endian, convert to little endian
+            // Decode the hex string to a byte array.
+            let hex_string = t.vin[i].txid.clone();
+            let bytes = hex::decode(hex_string).unwrap();
+
+            // Reverse the order of the bytes.
+            let reversed_bytes = bytes.iter().rev().cloned().collect::<Vec<u8>>();
+
+            // Convert the reversed bytes to a string.
+            let reversed_hex_string = hex::encode(reversed_bytes);
+            transaction_data.push_str(&reversed_hex_string);
+
+            // 4 bytes prevout index little endian
+            
+
+            let vout = t.vin[i].vout;
+            transaction_data.push_str(
+                &convert_to_4bytes(vout)
+            );
+
+            // 1 byte scriptpubkey length\
+            let pub_key_len =t.vin[i].scriptsig.len() / 2;
+            transaction_data.push_str(int_to_varint(pub_key_len as u64).as_str());
+            //pub key
+            transaction_data.push_str(&t.vin[i].scriptsig);
+
+            // 4 bytes sequence, is always ffffffff
+            transaction_data.push_str(convert_to_4bytes(t.vin[i].sequence).as_str());
+
+
+            // number of witness
+            let mut witness_cnt=t.vin[i].witness.len();
+            witness.push_str(&int_to_varint(witness_cnt as u64));
+            for j in 0..t.vin[i].witness.len() {
+                let pub_key_len =t.vin[i].witness[j].len() / 2;
+                witness.push_str(int_to_varint(pub_key_len as u64).as_str());
+                witness.push_str(&t.vin[i].witness[j]);
+            }
+            
+        }
+    }
+    // for output
+
+   
+    let output_count = t.vout.len();
+    transaction_data.push_str(&int_to_varint(output_count as u64));
+    for i in 0..t.vout.len() {
+        // 8 bytes amount in little endian
+        let amount = t.vout[i].value;
+        transaction_data.push_str(
+            &convert_to_8bytes(amount as u32)
+        );
+        // 1 byte scriptPubKey length
+        let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;
+        transaction_data.push_str(int_to_varint(scriptpubkey_len as u64).as_str());
+        // scriptPubKey
+        transaction_data.push_str(&t.vout[i].scriptpubkey);
+    }
+    
+    
+    if is_segwit {
+        transaction_data.push_str(&witness);
+        
+        
+    }
+    transaction_data.insert_str(0, &convert_to_4bytes(t.version));
+    transaction_data.push_str(&convert_to_4bytes(t.locktime));
+    // println!("{}",transaction_data);
+
+
+    // Calculate the hash of the transaction data
+    
+
+       
+    let txid = double_sha256(transaction_data);
+    txid
+    
+}
+
+
+use sha2::{Digest, Sha256};
+
+// Function to calculate Merkle root of transactions
+ fn calculate_txid(transactions: &[Transaction]) -> Vec<String> {
+    let mut txids = vec![];
+       let mut xx=0;
+    for t in transactions {
+        if xx==0 {
+            xx=1;
+            continue;
+        }
+       
+        let txid = txid_data(t.clone());
+        
+        txids.push(txid);
+    }
+    txids
+
+}
    
 
 use std::io::Write;
 
-// Function to write block data to output.txt file
-fn write_to_output_file(block: &Block, coinbase_txid: &str, transaction_txids: &[String]) {
+// // Function to write block data to output.txt file
+fn write_to_output_file(header:String, coinbase_txid: &str, transaction_txids: Vec<String>) {
     let mut file = match File::create("../output.txt") {
         Ok(file) => file,
         Err(_) => {
@@ -131,7 +438,7 @@ fn write_to_output_file(block: &Block, coinbase_txid: &str, transaction_txids: &
     };
 
     // Write block header to file
-    writeln!(file, "Block Header: {}", block.header).expect("Error writing to file");
+    writeln!(file, "Block Header: {}", header).expect("Error writing to file");
 
     // Write serialized coinbase transaction to file
     writeln!(file, "Serialized Coinbase Transaction: {}", coinbase_txid).expect("Error writing to file");

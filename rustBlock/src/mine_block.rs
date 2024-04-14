@@ -1,49 +1,90 @@
+use num::Num;
 use sha2::{Digest, Sha256};
 use hex;
 use crate::transacton_struct::*;
 use crate::assemble_block::*;
+use num::{BigUint, FromPrimitive};
 
-// Function to calculate the total fee collected from transactions
-fn calculate_total_fee(transactions: &[Transaction]) -> u64 {
-    transactions.iter().map(|tx| calculate_transaction_fee(tx)).sum()
+
+fn convert_to_4bytes(num:u32)->String{
+
+    let mut bytes = vec![];
+    bytes.extend_from_slice(&(num as u32).to_le_bytes());
+ 
+     // Convert the bytes to a hexadecimal string
+     let hex_string = hex::encode(&bytes);
+        hex_string
 }
 
-// Function to calculate the fee of a transaction
-fn calculate_transaction_fee(transaction: &Transaction) -> u64 {
-    let input_value: u64 = transaction.vin.iter().map(|input| input.prevout.value).sum();
-    let output_value: u64 = transaction.vout.iter().map(|output| output.value).sum();
-    input_value - output_value
+fn double_sha256(data:String) -> String {
+    // Convert the hexadecimal string to a byte array.
+    let bytes = hex::decode(data).unwrap();
+
+    // Calculate the SHA-256 hash of the byte array.
+    let hash = Sha256::digest(&bytes);
+
+    // Calculate the double SHA-256 hash of the byte array.
+    let double_hash = Sha256::digest(&hash);
+
+    // Convert the hash to a hexadecimal string.
+    let hex_string = hex::encode(double_hash);
+
+    hex_string
+
 }
 
-pub fn mine_block(mut block: Block, difficulty_target: &str) -> Block {
-    let  hasher = Sha256::new();
-    let mut x=1000;
+fn reverse_bytes(hex_string:String)->String{
+    // println!("{}",hex_string);
+    let bytes = hex::decode(hex_string).unwrap();
+
+    // Reverse the order of the bytes.
+    let reversed_bytes = bytes.iter().rev().cloned().collect::<Vec<u8>>();
+
+    // Convert the reversed bytes to a string.
+    let reversed_hex_string = hex::encode(reversed_bytes);
+    reversed_hex_string
+
+}
+
+
+
+
+
+pub fn mine_block(mut block:Block, target:String)-> Block{
+
+    let new_block = block.clone();
+    let header_data = format!(
+        "{}{}{}{}{}",
+        reverse_bytes(new_block.version),
+        reverse_bytes(new_block.prev_block_hash),
+        reverse_bytes(new_block.merkle_root),
+        reverse_bytes(new_block.timestamp),
+        reverse_bytes(new_block.bits)
+    );
+    let mut nonce = 0;
+
     loop {
-        x=x-1;
-        // Concatenate block header and nonce
-        let data = format!("{}{}", block.header, block.nonce);
-        // Convert data to bytes
-        let data_bytes = data.as_bytes();
+        // Hash the block header
+        let attempt = format!("{}{}", header_data, reverse_bytes(convert_to_4bytes(nonce)));
+        let result = reverse_bytes(double_sha256(attempt));
 
-        // Calculate hash of concatenated data
-        let mut hasher = Sha256::new(); // Create a new instance of the hasher
-        hasher.update(data_bytes);
-        let hash = hasher.finalize();
+        // // Show result
+        // println!("{}: {}", nonce, result);
 
-        // Check if the hash meets the difficulty target
-        if hash.starts_with(difficulty_target.as_bytes()) || x==0{
-            // Convert hash to hexadecimal string
-            block.header = hex::encode(hash);
-            break; // Block mined successfully
+        // Break if the hash is below the target
+        if BigUint::from_str_radix(&result, 16).unwrap() < BigUint::from_str_radix(&target, 16).unwrap(){
+            break;
         }
 
-        // Increment nonce for next iteration
-        block.nonce += 1;
+        nonce += 1;
     }
 
-    // Calculate the total fee
-    let transactions = &block.transactions;
-    block.total_fee = calculate_total_fee(transactions);
-    block.header=hex::encode("0000ffff00000000000000000000000000000000000000000000000000000000");
-    block
+
+    block.nonce=nonce;
+    return block
+
+
+    
+
+    
 }
