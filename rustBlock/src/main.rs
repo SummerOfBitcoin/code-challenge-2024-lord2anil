@@ -210,7 +210,7 @@ fn main() {
     // }
    
     transactions= validate_transactions(&transactions).clone();
-    println!("{:?} {x}", transactions.len());
+    // println!("{:?} {x}", transactions.len());
 
 
  let coinbase_transaction: Transaction = construct_coinbase_transaction(6, 1,"03178e5f7ba2f41f449ce90ba0635bad19bbb17d7e634ed50f96c4f956e704d188"); // Example block reward and transaction fees
@@ -227,7 +227,7 @@ fn main() {
 
 
     // Print the mined block
-    println!("hello this {:#?}", mined_block.nonce);
+    // println!("hello this {:#?}", mined_block.nonce);
 
     // generate the block header
     let block_header = serialize_block_header(&mined_block);
@@ -411,10 +411,7 @@ use sha2::{Digest, Sha256};
     let mut txids = vec![];
        let mut xx=0;
     for t in transactions {
-        if xx==0 {
-            xx=1;
-            continue;
-        }
+      
        
         let txid = txid_data(t.clone());
         
@@ -438,13 +435,13 @@ fn write_to_output_file(header:String, coinbase_txid: &str, transaction_txids: V
     };
 
     // Write block header to file
-    writeln!(file, "Block Header: {}", header).expect("Error writing to file");
+    writeln!(file, "{}", header).expect("Error writing to file");
 
     // Write serialized coinbase transaction to file
-    writeln!(file, "Serialized Coinbase Transaction: {}", coinbase_txid).expect("Error writing to file");
+    writeln!(file, "{}", coinbase_txid).expect("Error writing to file");
 
     // Write transaction IDs of mined transactions to file
-    writeln!(file, "Transaction IDs:").expect("Error writing to file");
+
     for txid in transaction_txids {
         writeln!(file, "{}", txid).expect("Error writing to file");
     }
