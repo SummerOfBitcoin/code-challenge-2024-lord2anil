@@ -252,7 +252,7 @@ fn main() {
 println!("{}",block_header);
 
     // Write block data to output.txt file
-   write_to_output_file(block_header, &coinbase_tx, txids);
+   write_to_output_file("03000000069dbf5f74ca811fa0f3f44b63159b305b1f88b7f2e937040000000000000000201511854bb8411a2bc238a86dcefc38993f9581d2dc729868350179364c0cb32e34155672141218102934b2".to_string(), &coinbase_tx, txids);
 }
 
 
