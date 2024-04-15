@@ -249,10 +249,10 @@ fn main() {
     let txids = calculate_txid(&mined_block.transactions);
 
 
-println!("{}",block_header);
+
 
     // Write block data to output.txt file
-   write_to_output_file("01000000069dbf5f74ca811fa0f3f44b63159b305b1f88b7f2e937040000000000000000201511854bb8411a2bc238a86dcefc38993f9581d2dc729868350179364c0cb32e34155672141218102934b2".to_string(), &coinbase_tx, txids);
+   write_to_output_file(block_header, &coinbase_tx, txids);
 }
 
 
@@ -271,6 +271,18 @@ fn double_sha256(data:String) -> String {
     let hex_string = hex::encode(double_hash);
 
     hex_string
+
+}
+fn reverse_bytes(hex_string:String)->String{
+    // println!("{}",hex_string);
+    let bytes = hex::decode(hex_string).unwrap();
+
+    // Reverse the order of the bytes.
+    let reversed_bytes = bytes.iter().rev().cloned().collect::<Vec<u8>>();
+
+    // Convert the reversed bytes to a string.
+    let reversed_hex_string = hex::encode(reversed_bytes);
+    reversed_hex_string
 
 }
 
@@ -426,7 +438,7 @@ use sha2::{Digest, Sha256};
        
         let txid = txid_data(t.clone());
         
-        txids.push(txid);
+        txids.push(reverse_bytes(txid));
     }
     txids
 
