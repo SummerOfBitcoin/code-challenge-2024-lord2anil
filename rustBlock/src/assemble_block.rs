@@ -53,7 +53,7 @@ pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
         version: "01000000".to_string(),
         prev_block_hash: "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
         merkle_root: merkle_root,
-        timestamp: "1713015662".to_string(),
+        timestamp: "5615342e".to_string(),
         bits: "1d00ffff".to_string(),
         nonce: 0,
         transactions: transactions,
