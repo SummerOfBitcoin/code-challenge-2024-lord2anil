@@ -2,7 +2,7 @@
 
 
 
-use crate::Transaction;
+use crate::{reverse_bytes, Transaction};
 
 #[derive(Debug,Clone)]
 pub struct Block {
@@ -16,37 +16,42 @@ pub struct Block {
 }
 
 
-fn calculate_merkle_root(txids: Vec<String>) -> String {
-    if txids.is_empty() {
-        return String::from("");
-    } else if txids.len() == 1 {
+fn merkle_root(txids: Vec<String>) -> String {
+    // Exit Condition: Stop recursion when we have one hash result left
+    if txids.len() == 1 {
+        // Convert the result to a string and return it
         return txids[0].clone();
     }
 
-    let mut tx_hashes = txids.clone(); 
+    // Keep an array of results
+    let mut result = Vec::new();
 
-    while tx_hashes.len() > 1 {
-        let mut new_hashes = Vec::new();
-        for i in (0..tx_hashes.len()).step_by(2) {
-            if i + 1 < tx_hashes.len() {
-                let combined_hash = double_sha256(format!("{}{}", tx_hashes[i], tx_hashes[i + 1]));
-                new_hashes.push(combined_hash);
-            } else {
-                new_hashes.push(tx_hashes[i].clone());
-            }
-        }
-        tx_hashes = new_hashes;
+    // Split up array of hashes in to pairs
+    for chunk in txids.chunks(2) {
+        let concat = match chunk.len() {
+            2 => chunk[0].clone() + &chunk[1],
+            1 => chunk[0].clone() + &chunk[0], // Concatenate with itself if there is no pair
+            _ => panic!("Unexpected length"),
+        };
+
+        // Hash the concatenated pair and add to results array
+        result.push(double_sha256(concat));
     }
 
-    tx_hashes[0].clone() 
-
+    // Recursion: Do the same thing again for these results
+    merkle_root(result)
 }
-
 pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
     // Calculate the merkle root of the transactions
     let  txids = calculate_txid(&transactions);
 
-    let merkle_root = calculate_merkle_root(txids.clone());
+    for i in 0..txids.len() {
+        println!("{}", txids[i]);
+    }
+
+    let merkle_root = merkle_root(txids.clone());
+
+    println!("Merkle root: {}", merkle_root);
 
     // assemble the block
     let block = Block {
@@ -276,7 +281,7 @@ use sha2::{Digest, Sha256};
        
         let txid = txid_data(t.clone());
         
-        txids.push(txid);
+        txids.push( txid);
     }
     txids
 
