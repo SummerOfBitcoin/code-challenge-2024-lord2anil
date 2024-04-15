@@ -20,6 +20,16 @@ use std::path::{ PathBuf};
 
 fn serialize_block_header(block: &Block) -> String {
     // You'll need to implement this based on your Block structure's format
+
+    // println!("{}",block.version);
+    // println!("{}",block.prev_block_hash);
+    // println!("{}",block.merkle_root);
+    // println!("{}",block.timestamp);
+    // println!("{}",block.bits);
+    // println!("{}",block.nonce);
+
+
+
      format!(
          "{}{}{}{}{}{}",
          &block.version,
@@ -27,8 +37,9 @@ fn serialize_block_header(block: &Block) -> String {
          &block.merkle_root,
          &block.timestamp,
          &block.bits,
-         &block.nonce
+         convert_to_4bytes(block.nonce)
      )
+
  }
  fn convert_to_4bytes(num:u32)->String{
 
@@ -238,10 +249,10 @@ fn main() {
     let txids = calculate_txid(&mined_block.transactions);
 
 
-
+println!("{}",block_header);
 
     // Write block data to output.txt file
-   write_to_output_file("0000000024da11de6d6f060e293c910f80065f6ecd1866128bf15e22abcb7f32".to_string(), &coinbase_tx, txids);
+   write_to_output_file(block_header, &coinbase_tx, txids);
 }
 
 
