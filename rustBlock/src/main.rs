@@ -437,6 +437,7 @@ use sha2::{Digest, Sha256};
       
        
         let txid = txid_data(t.clone());
+        // println!("{}",txid);
         
         txids.push(reverse_bytes(txid));
     }
