@@ -32,12 +32,12 @@ fn serialize_block_header(block: &Block) -> String {
 
      format!(
          "{}{}{}{}{}{}",
-         &block.version,
-         &block.prev_block_hash,
-         &block.merkle_root,
-         &block.timestamp,
-         &block.bits,
-         convert_to_4bytes(block.nonce)
+         reverse_bytes(block.version.clone()),
+         reverse_bytes(block.prev_block_hash.clone()),
+         reverse_bytes(block.merkle_root.clone()),
+         reverse_bytes(block.timestamp.clone()),
+         reverse_bytes(block.bits.clone()),
+        reverse_bytes( convert_to_4bytes(block.nonce))
      )
 
  }
