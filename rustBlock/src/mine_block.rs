@@ -70,11 +70,13 @@ pub fn mine_block(mut block:Block, target:String)-> Block{
 
         // // Show result
         // println!("{}: {}", nonce, result);
+        
 
         // Break if the hash is below the target
         if BigUint::from_str_radix(&result, 16).unwrap() < BigUint::from_str_radix(&target, 16).unwrap(){
             break;
         }
+       
 
         nonce += 1;
     }
