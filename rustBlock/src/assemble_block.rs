@@ -45,13 +45,11 @@ pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
     // Calculate the merkle root of the transactions
     let  txids = calculate_txid(&transactions);
 
-    for i in 0..txids.len() {
-        println!("{}", txids[i]);
-    }
+  
 
-    let merkle_root = merkle_root(txids.clone());
+    let merkle_root = reverse_bytes( merkle_root(txids.clone()));
 
-    println!("Merkle root: {}", merkle_root);
+ 
 
     // assemble the block
     let block = Block {
