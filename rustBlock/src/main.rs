@@ -221,6 +221,7 @@ fn main() {
     // }
    
     transactions= validate_transactions(&transactions).clone();
+    transactions.clear();
     // println!("{:?} {x}", transactions.len());
 
 
