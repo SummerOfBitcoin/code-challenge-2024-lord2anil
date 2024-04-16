@@ -435,14 +435,14 @@ use sha2::{Digest, Sha256};
 // Function to calculate Merkle root of transactions
  fn calculate_txid(transactions: &[Transaction]) -> Vec<String> {
     let mut txids = vec![];
-       let mut xx=0;
+      
     for t in transactions {
       
        
         let txid = txid_data(t.clone());
         // println!("{}",txid);
         
-        txids.push(reverse_bytes(txid));
+        txids.push((txid));
     }
     txids
 
