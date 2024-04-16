@@ -42,7 +42,7 @@ pub fn construct_coinbase_transaction(
         value: block_reward + transaction_fees, // Include transaction fees
     };
     let miner_output2 = TransactionOutput {
-        scriptpubkey:String::from("6a24aa21a9edfaa194df59043645ba0f58aad74bfd5693fa497093174d12a4bb3b0574a878db"), // Use the generated script 
+        scriptpubkey:String::from("faa194df59043645ba0f58aad74bfd5693fa497093174d12a4bb3b0574a878db"), // Use the generated script 
         scriptpubkey_asm: String::from(""), // You would need to fill this if required
         scriptpubkey_type: String::from(""),
         scriptpubkey_address: String::from(""), // Derive if needed
