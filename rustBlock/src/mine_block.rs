@@ -57,7 +57,7 @@ pub fn mine_block(mut block:Block, target:String)-> Block{
         "{}{}{}{}{}",
         (new_block.version),
         (new_block.prev_block_hash),
-        reverse_bytes(new_block.merkle_root),
+        (new_block.merkle_root),
         (new_block.timestamp),
         (new_block.bits)
     );
@@ -65,7 +65,7 @@ pub fn mine_block(mut block:Block, target:String)-> Block{
 
     loop {
         // Hash the block header
-        let attempt = format!("{}{}", header_data, reverse_bytes(convert_to_4bytes(nonce)));
+        let attempt = format!("{}{}", header_data, (convert_to_4bytes(nonce)));
         let result = reverse_bytes(double_sha256(attempt));
 
         // // Show result
