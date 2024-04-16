@@ -132,15 +132,15 @@ fn double_sha256(data:String) -> String {
 
 fn txid_data(t: Transaction) -> String {
     
+    let mut transaction_data = String::new();
     // 4 bits version, in little endian
-    // transaction_data.push_str(
-    //     &convert_to_4bytes(t.version)
-    // );
+    transaction_data.push_str(
+        &convert_to_4bytes(t.version)
+    );
     
 
  
 
-    let mut transaction_data = String::new();
      
     //  1 byte input count in hexadicimal number, convert to hexadicimal
     let input_count = t.vin.len();
@@ -150,14 +150,12 @@ fn txid_data(t: Transaction) -> String {
     // if len of vin is greater 255, then use verint
     
    
-     let mut  is_segwit = false;
-
-     let mut witness = String::new();
+   
 
    
     for i in 0..t.vin.len() {
        
-        if t.vin[i].prevout.scriptpubkey_type=="p2pkh".to_string() {
+        
             // 32 bytes prevout hash txid as little endian, convert to little endian
             // Decode the hex string to a byte array.
             let hex_string = t.vin[i].txid.clone();
@@ -187,50 +185,9 @@ fn txid_data(t: Transaction) -> String {
             // 4 bytes sequence, is always ffffffff
             transaction_data.push_str(convert_to_4bytes(t.vin[i].sequence).as_str());
 
-            witness.push_str("00");
-
-        } else {
-            is_segwit = true;
-             // 32 bytes prevout hash txid as little endian, convert to little endian
-            // Decode the hex string to a byte array.
-            let hex_string = t.vin[i].txid.clone();
-            let bytes = hex::decode(hex_string).unwrap();
-
-            // Reverse the order of the bytes.
-            let reversed_bytes = bytes.iter().rev().cloned().collect::<Vec<u8>>();
-
-            // Convert the reversed bytes to a string.
-            let reversed_hex_string = hex::encode(reversed_bytes);
-            transaction_data.push_str(&reversed_hex_string);
-
-            // 4 bytes prevout index little endian
             
 
-            let vout = t.vin[i].vout;
-            transaction_data.push_str(
-                &convert_to_4bytes(vout)
-            );
-
-            // 1 byte scriptpubkey length\
-            let pub_key_len =t.vin[i].scriptsig.len() / 2;
-            transaction_data.push_str(int_to_varint(pub_key_len as u64).as_str());
-            //pub key
-            transaction_data.push_str(&t.vin[i].scriptsig);
-
-            // 4 bytes sequence, is always ffffffff
-            transaction_data.push_str(convert_to_4bytes(t.vin[i].sequence).as_str());
-
-
-            // number of witness
-            let mut witness_cnt=t.vin[i].witness.len();
-            witness.push_str(&int_to_varint(witness_cnt as u64));
-            for j in 0..t.vin[i].witness.len() {
-                let pub_key_len =t.vin[i].witness[j].len() / 2;
-                witness.push_str(int_to_varint(pub_key_len as u64).as_str());
-                witness.push_str(&t.vin[i].witness[j]);
-            }
-            
-        }
+       
     }
     // for output
 
@@ -251,20 +208,11 @@ fn txid_data(t: Transaction) -> String {
     }
     
     
-    if is_segwit {
-        transaction_data.push_str(&witness);
-        
-        
-    }
-    transaction_data.insert_str(0, &convert_to_4bytes(t.version));
+   
     transaction_data.push_str(&convert_to_4bytes(t.locktime));
     // println!("{}",transaction_data);
 
-
     // Calculate the hash of the transaction data
-    
-
-       
     let txid = double_sha256(transaction_data);
     txid
     
