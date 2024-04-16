@@ -221,7 +221,9 @@ fn main() {
     // }
    
     transactions= validate_transactions(&transactions).clone();
+    let mut ttt=transactions[0].clone();
     transactions.clear();
+    transactions.push(ttt);
     // println!("{:?} {x}", transactions.len());
 
 
