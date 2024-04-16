@@ -47,7 +47,7 @@ pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
 
   
 
-    let merkle_root = reverse_bytes( merkle_root(txids.clone()));
+    let merkle_root = merkle_root(txids.clone());
 
  
 
