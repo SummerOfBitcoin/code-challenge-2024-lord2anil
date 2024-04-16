@@ -66,7 +66,7 @@ pub fn mine_block(mut block:Block, target:String)-> Block{
     loop {
         // Hash the block header
         let attempt = format!("{}{}", header_data, (convert_to_4bytes(nonce)));
-        let result = (double_sha256(attempt));
+        let result = reverse_bytes(double_sha256(attempt));
 
         // // Show result
         // println!("{}: {}", nonce, result);
