@@ -43,7 +43,7 @@ pub fn construct_coinbase_transaction(
     // Additional outputs for transaction fees can be added here
     
     let coinbase_transaction = Transaction {
-        version: 1,
+        version: 2,
         locktime: 0,
         vin: coinbase_inputs,
         vout: coinbase_outputs,
