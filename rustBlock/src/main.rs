@@ -255,7 +255,7 @@ fn main() {
 
      println!("{}",block_header);
     // Write block data to output.txt file
-   write_to_output_file(block_header, &coinbase_tx, txids);
+   write_to_output_file(block_header, "f23dfsfwf", txids);
 }
 
 
@@ -442,7 +442,7 @@ use sha2::{Digest, Sha256};
         let txid = txid_data(t.clone());
         // println!("{}",txid);
         
-        txids.push(txid);
+        txids.push(reverse_bytes(txid));
     }
     txids
 
