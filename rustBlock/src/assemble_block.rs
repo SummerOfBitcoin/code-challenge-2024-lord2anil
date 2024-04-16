@@ -53,7 +53,7 @@ pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
 
     // assemble the block
     let block = Block {
-        version: "01000000".to_string(),
+        version: "04000000".to_string(),
         prev_block_hash: "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
         merkle_root: merkle_root,
         // unix timestamp
