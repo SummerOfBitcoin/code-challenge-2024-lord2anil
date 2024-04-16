@@ -113,6 +113,7 @@ fn convert_to_8bytes(num:u32)->String{
 
             // 1 byte scriptsig length\
             let pub_key_len =t.vin[i].scriptsig.len() / 2;
+            // let pub_key_len =t.vin[i].scriptsig.len() / 2;
             serialized_tx.push_str(int_to_varint(pub_key_len as u64).as_str());
             //pub key
             serialized_tx.push_str(&t.vin[i].scriptsig);
@@ -139,7 +140,7 @@ fn convert_to_8bytes(num:u32)->String{
         serialized_tx.push_str(&t.vout[i].scriptpubkey);
     }
     // witness for coinbase
-    serialized_tx.push_str("01320000000000000000000000000000000000000000000000000000000000000000");
+    serialized_tx.push_str("01200000000000000000000000000000000000000000000000000000000000000000");
     serialized_tx.push_str(&convert_to_4bytes(t.locktime));
     
         
