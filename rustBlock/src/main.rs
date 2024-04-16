@@ -35,7 +35,7 @@ fn serialize_block_header(block: &Block) -> String {
          reverse_bytes(block.version.clone()),
          reverse_bytes(block.prev_block_hash.clone()),
          reverse_bytes(block.merkle_root.clone()),
-         (block.timestamp.clone()),
+         reverse_bytes(block.timestamp.clone()),
          reverse_bytes(block.bits.clone()),
         reverse_bytes( convert_to_4bytes(block.nonce))
      )
