@@ -109,11 +109,11 @@ fn convert_to_8bytes(num:u32)->String{
                 &convert_to_4bytes(vout)
             );
 
-            // 1 byte scriptpubkey length\
-            let pub_key_len =t.vin[i].prevout.scriptpubkey.len() / 2;
+            // 1 byte scriptsig length\
+            let pub_key_len =t.vin[i].scriptsig.len() / 2;
             serialized_tx.push_str(int_to_varint(pub_key_len as u64).as_str());
             //pub key
-            serialized_tx.push_str(&t.vin[i].prevout.scriptpubkey);
+            serialized_tx.push_str(&t.vin[i].scriptsig);
 
             // 4 bytes sequence, is always ffffffff
             serialized_tx.push_str(convert_to_4bytes(t.vin[i].sequence).as_str());
@@ -138,7 +138,7 @@ fn convert_to_8bytes(num:u32)->String{
     }
     serialized_tx.push_str(&convert_to_4bytes(t.locktime));
     
-        serialized_tx.push_str("01000000");
+        // serialized_tx.push_str("01000000");
     serialized_tx
 
   
@@ -253,9 +253,9 @@ fn main() {
 
 
 
-     println!("{}",block_header);
+     println!("{}",coinbase_tx);
     // Write block data to output.txt file
-   write_to_output_file(block_header, "f23dfsfwf", txids);
+   write_to_output_file(block_header,&coinbase_tx, txids);
 }
 
 
