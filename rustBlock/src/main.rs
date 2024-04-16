@@ -26,7 +26,7 @@ fn serialize_block_header(block: &Block) -> String {
     // println!("{}",block.merkle_root);
     // println!("{}",block.timestamp);
     // println!("{}",block.bits);
-    // println!("{}",block.nonce);
+    println!("{}",block.nonce);
 
 
 
@@ -34,7 +34,7 @@ fn serialize_block_header(block: &Block) -> String {
          "{}{}{}{}{}{}",
          (block.version.clone()),
          (block.prev_block_hash.clone()),
-         reverse_bytes(block.merkle_root.clone()),
+         (block.merkle_root.clone()),
          (block.timestamp.clone()),
          (block.bits.clone()),
         ( convert_to_4bytes(block.nonce))
