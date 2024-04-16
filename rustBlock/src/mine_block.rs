@@ -55,11 +55,11 @@ pub fn mine_block(mut block:Block, target:String)-> Block{
     let new_block = block.clone();
     let header_data = format!(
         "{}{}{}{}{}",
-        reverse_bytes(new_block.version),
-        reverse_bytes(new_block.prev_block_hash),
+        (new_block.version),
+        (new_block.prev_block_hash),
         reverse_bytes(new_block.merkle_root),
-        reverse_bytes(new_block.timestamp),
-        reverse_bytes(new_block.bits)
+        (new_block.timestamp),
+        (new_block.bits)
     );
     let mut nonce = 0;
 
