@@ -59,7 +59,7 @@ pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
         // unix timestamp
         timestamp: convert_to_4bytes(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as u32),
 
-        bits: "1f00ffff".to_string(),
+        bits: reverse_bytes( "1f00ffff".to_string()),
         nonce: 0,
         transactions: transactions,
     };
