@@ -250,7 +250,7 @@ fn main() {
 
 
 
-
+     println!("{}",block_header);
     // Write block data to output.txt file
    write_to_output_file(block_header, &coinbase_tx, txids);
 }
