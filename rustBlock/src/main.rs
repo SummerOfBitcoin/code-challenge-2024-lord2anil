@@ -226,7 +226,7 @@ fn main() {
     //     transactions.push(transaction);
     // }
    
-    transactions= validate_transactions(&transactions).clone();
+    // transactions= validate_transactions(&transactions).clone();
     // let mut ttt=transactions[0].clone();
     // transactions.clear();
     // transactions.push(ttt);
