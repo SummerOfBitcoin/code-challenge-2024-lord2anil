@@ -226,13 +226,13 @@ fn main() {
     // }
    
     transactions= validate_transactions(&transactions).clone();
-    let mut ttt=transactions[0].clone();
-    transactions.clear();
-    transactions.push(ttt);
+    // let mut ttt=transactions[0].clone();
+    // transactions.clear();
+    // transactions.push(ttt);
     // println!("{:?} {x}", transactions.len());
 
 
- let coinbase_transaction: Transaction = construct_coinbase_transaction(6, 1,"03178e5f7ba2f41f449ce90ba0635bad19bbb17d7e634ed50f96c4f956e704d188"); // Example block reward and transaction fees
+ let coinbase_transaction: Transaction = construct_coinbase_transaction(6, 1,   transactions.clone()); // Example block reward and transaction fees
     transactions.insert(0, coinbase_transaction);
     let block = assemble_block(transactions);
    
