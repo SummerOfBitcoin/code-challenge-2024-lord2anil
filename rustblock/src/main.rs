@@ -10,6 +10,7 @@ use coinbase_transaction::*;
 use validate_transactions::validate_transactions;
 mod transacton_struct;
 mod utiles;
+mod validations_utiles;
 
 use transacton_struct::Transaction;
 mod mine_block;
