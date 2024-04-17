@@ -7,7 +7,7 @@ use crate::transacton_struct::*;
 pub fn construct_coinbase_transaction(
     block_reward: u64, 
     transaction_fees: u64,
-    miner_public_key_hash: &str,   
+    Transactions:Vec<Transaction>,
 ) -> Transaction {
 
     let mut wit=Vec::new();
@@ -31,7 +31,7 @@ pub fn construct_coinbase_transaction(
     };
     coinbase_inputs.push(coinbase_input);
     
-    let miner_script_pubkey = create_p2pkh_script(miner_public_key_hash); 
+    // let miner_script_pubkey = create_p2pkh_script(miner_public_key_hash); 
 
     let mut coinbase_outputs = Vec::new();
     let miner_output = TransactionOutput {
@@ -42,7 +42,7 @@ pub fn construct_coinbase_transaction(
         value: block_reward + transaction_fees, // Include transaction fees
     };
     let miner_output2 = TransactionOutput {
-        scriptpubkey:String::from("faa194df59043645ba0f58aad74bfd5693fa497093174d12a4bb3b0574a878db"), // Use the generated script 
+        scriptpubkey:calculate_witness_commitment(Transactions).to_string(), // Use the generated script 
         scriptpubkey_asm: String::from(""), // You would need to fill this if required
         scriptpubkey_type: String::from(""),
         scriptpubkey_address: String::from(""), // Derive if needed
@@ -69,9 +69,49 @@ fn create_p2pkh_script(public_key_hash: &str) -> String {
 }
 
 
+fn calculate_witness_commitment(transactions:Vec<Transaction>) -> String {
+   
+   let mut wtxids:Vec<String> = Vec::new();
+   wtxids.push("0000000000000000000000000000000000000000000000000000000000000000".to_string());
+  for t in transactions {
+    let wtxid = wtxid_data(t);
+    wtxids.push(wtxid);
+  }
+    let mut merkle_root = merkle_root(wtxids);
+merkle_root.push_str("0000000000000000000000000000000000000000000000000000000000000000");
+
+let  witness_commitment = double_sha256(merkle_root);
 
 
-fn txid_data(t: Transaction) -> String {
+witness_commitment
+}
+fn merkle_root(txids: Vec<String>) -> String {
+    // Exit Condition: Stop recursion when we have one hash result left
+    if txids.len() == 1 {
+        // Convert the result to a string and return it
+        return txids[0].clone();
+    }
+
+    // Keep an array of results
+    let mut result = Vec::new();
+
+    // Split up array of hashes in to pairs
+    for chunk in txids.chunks(2) {
+        let concat = match chunk.len() {
+            2 => chunk[0].clone() + &chunk[1],
+            1 => chunk[0].clone() + &chunk[0], // Concatenate with itself if there is no pair
+            _ => panic!("Unexpected length"),
+        };
+
+        // Hash the concatenated pair and add to results array
+        result.push(double_sha256(concat));
+    }
+
+    // Recursion: Do the same thing again for these results
+    merkle_root(result)
+}
+
+fn wtxid_data(t: Transaction) -> String {
     
     // 4 bits version, in little endian
     // transaction_data.push_str(
@@ -98,7 +138,7 @@ fn txid_data(t: Transaction) -> String {
    
     for i in 0..t.vin.len() {
        
-        if t.vin[i].prevout.scriptpubkey_type=="p2pkh".to_string() {
+        if t.vin[i].prevout.scriptpubkey_type=="p2pkh".to_string()  || t.vin[i].prevout.scriptpubkey_type=="p2sh".to_string(){
             // 32 bytes prevout hash txid as little endian, convert to little endian
             // Decode the hex string to a byte array.
             let hex_string = t.vin[i].txid.clone();
@@ -206,8 +246,8 @@ fn txid_data(t: Transaction) -> String {
     
 
        
-    let txid = double_sha256(transaction_data);
-    txid
+    let wtxid = double_sha256(transaction_data);
+    wtxid
     
 }
 fn convert_to_4bytes(num:u32)->String{
