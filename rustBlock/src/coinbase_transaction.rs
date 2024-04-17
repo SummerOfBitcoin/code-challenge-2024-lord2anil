@@ -48,6 +48,7 @@ pub fn construct_coinbase_transaction(
         scriptpubkey_address: String::from(""), // Derive if needed
         value: 0, // Include transaction fees
     };
+    
     coinbase_outputs.push(miner_output);
     coinbase_outputs.push(miner_output2);
     
@@ -81,9 +82,9 @@ fn calculate_witness_commitment(transactions:Vec<Transaction>) -> String {
 merkle_root.push_str("0000000000000000000000000000000000000000000000000000000000000000");
 
 let  witness_commitment = double_sha256(merkle_root);
-
-
-witness_commitment
+let mut wit_new=String::from("aa21a9ed".to_string());
+wit_new.push_str(&witness_commitment);
+wit_new
 }
 fn merkle_root(txids: Vec<String>) -> String {
     // Exit Condition: Stop recursion when we have one hash result left
