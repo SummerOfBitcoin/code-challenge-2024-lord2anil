@@ -5,9 +5,12 @@ use secp256k1::ecdsa::Signature;
 use secp256k1::{Message, PublicKey, Secp256k1};
 use sha2::{Digest, Sha256};
 
-use crate::transacton_struct::TransactionInput;
 use crate::Transaction;
-use byteorder::{LittleEndian, WriteBytesExt};
+
+
+
+use super::utiles::{convert_to_4bytes, convert_to_8bytes, int_to_varint};
+
 
 pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
     let mut valid_transactions: Vec<Transaction> = Vec::new();
@@ -21,43 +24,6 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
 }
 
 
-fn convert_to_4bytes(num:u32)->String{
-
-    let mut bytes = vec![];
-    bytes.extend_from_slice(&(num as u32).to_le_bytes());
- 
-     // Convert the bytes to a hexadecimal string
-     let hex_string = hex::encode(&bytes);
-        hex_string
-}
-fn convert_to_8bytes(num:u32)->String{
-
-    let mut bytes = vec![];
-    bytes.extend_from_slice(&(num as u64).to_le_bytes());
- 
-     // Convert the bytes to a hexadecimal string
-     let hex_string = hex::encode(&bytes);
-        hex_string
-}
-
-fn int_to_varint(n: u64) -> String {
-    
-    if n <= 252 {  // 0xFC
-        return hex::encode (vec![n as u8]);
-    } else if n <= 65535 {  // 0xFFFF
-        let mut bytes = vec![0xFD];
-        bytes.extend_from_slice(&(n as u16).to_le_bytes());
-        return  hex::encode (bytes);
-    } else if n <= 4294967295 {  // 0xFFFFFFFF
-        let mut bytes = vec![0xFE];
-        bytes.extend_from_slice(&(n as u32).to_le_bytes());
-        return hex::encode (bytes);
-    } else {
-        let mut bytes = vec![0xFF];
-        bytes.extend_from_slice(&n.to_le_bytes());
-        return hex::encode (bytes);
-    }
-}
 
 
 
@@ -77,12 +43,6 @@ fn verify_signature(t: Transaction, idx: usize) -> bool {
     // if len of vin is greater 255, then use verint
     
    
-    //public key hash of idx input
-    let scriptpubkey_hash = t.vin[idx]
-        .prevout
-        .scriptpubkey_asm
-        .split(" ")
-        .collect::<Vec<&str>>()[3];
    
     for i in 0..t.vin.len() {
         if i == idx {
@@ -198,6 +158,8 @@ fn verify_signature(t: Transaction, idx: usize) -> bool {
     secp.verify_ecdsa(&message, &signature, &pub_key).is_ok()
     // println!("{:?}",pub_key);
 }
+
+
 fn p2pkh_validate(t: &Transaction, idx: usize) -> bool {
     let scriptsig_asm1 = t.vin[idx].scriptsig_asm.clone();
     let binding = scriptsig_asm1.split(" ").collect::<Vec<&str>>();

@@ -293,7 +293,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustBlock"
+name = "rustblock"
 version = "0.1.0"
 dependencies = [
  "base64",

@@ -4,6 +4,13 @@
 
 use crate::{reverse_bytes, Transaction};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use super::utiles::{convert_to_4bytes, convert_to_8bytes, int_to_varint,double_sha256,merkle_root};
+
+
+
+
+
 #[derive(Debug,Clone)]
 pub struct Block {
     pub version: String,
@@ -16,31 +23,6 @@ pub struct Block {
 }
 
 
-fn merkle_root(txids: Vec<String>) -> String {
-    // Exit Condition: Stop recursion when we have one hash result left
-    if txids.len() == 1 {
-        // Convert the result to a string and return it
-        return txids[0].clone();
-    }
-
-    // Keep an array of results
-    let mut result = Vec::new();
-
-    // Split up array of hashes in to pairs
-    for chunk in txids.chunks(2) {
-        let concat = match chunk.len() {
-            2 => chunk[0].clone() + &chunk[1],
-            1 => chunk[0].clone() + &chunk[0], // Concatenate with itself if there is no pair
-            _ => panic!("Unexpected length"),
-        };
-
-        // Hash the concatenated pair and add to results array
-        result.push(double_sha256(concat));
-    }
-
-    // Recursion: Do the same thing again for these results
-    merkle_root(result)
-}
 pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
     // Calculate the merkle root of the transactions
     let  txids = calculate_txid(&transactions);
@@ -75,60 +57,6 @@ pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
 }
 
 
-fn convert_to_4bytes(num:u32)->String{
-
-    let mut bytes = vec![];
-    bytes.extend_from_slice(&(num as u32).to_le_bytes());
- 
-     // Convert the bytes to a hexadecimal string
-     let hex_string = hex::encode(&bytes);
-        hex_string
-}
-fn convert_to_8bytes(num:u32)->String{
-
-    let mut bytes = vec![];
-    bytes.extend_from_slice(&(num as u64).to_le_bytes());
- 
-     // Convert the bytes to a hexadecimal string
-     let hex_string = hex::encode(&bytes);
-        hex_string
-}
-
-fn int_to_varint(n: u64) -> String {
-    
-    if n <= 252 {  // 0xFC
-        return hex::encode (vec![n as u8]);
-    } else if n <= 65535 {  // 0xFFFF
-        let mut bytes = vec![0xFD];
-        bytes.extend_from_slice(&(n as u16).to_le_bytes());
-        return  hex::encode (bytes);
-    } else if n <= 4294967295 {  // 0xFFFFFFFF
-        let mut bytes = vec![0xFE];
-        bytes.extend_from_slice(&(n as u32).to_le_bytes());
-        return hex::encode (bytes);
-    } else {
-        let mut bytes = vec![0xFF];
-        bytes.extend_from_slice(&n.to_le_bytes());
-        return hex::encode (bytes);
-    }
-}
-
-fn double_sha256(data:String) -> String {
-    // Convert the hexadecimal string to a byte array.
-    let bytes = hex::decode(data).unwrap();
-
-    // Calculate the SHA-256 hash of the byte array.
-    let hash = Sha256::digest(&bytes);
-
-    // Calculate the double SHA-256 hash of the byte array.
-    let double_hash = Sha256::digest(&hash);
-
-    // Convert the hash to a hexadecimal string.
-    let hex_string = hex::encode(double_hash);
-
-    hex_string
-
-}
 
 fn txid_data(t: Transaction) -> String {
     
@@ -219,7 +147,7 @@ fn txid_data(t: Transaction) -> String {
 }
 
 
-use sha2::{Digest, Sha256};
+
 
 // Function to calculate Merkle root of transactions
  fn calculate_txid(transactions: &[Transaction]) -> Vec<String> {

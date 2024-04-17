@@ -1,13 +1,15 @@
 
 
-use sha2::{Digest, Sha256};
+use super::utiles::{convert_to_4bytes, convert_to_8bytes, int_to_varint,double_sha256,merkle_root};
+
 
 use crate::transacton_struct::*;
+
 
 pub fn construct_coinbase_transaction(
     block_reward: u64, 
     transaction_fees: u64,
-    Transactions:Vec<Transaction>,
+    transactions:Vec<Transaction>,
 ) -> Transaction {
 
     let mut wit=Vec::new();
@@ -42,7 +44,7 @@ pub fn construct_coinbase_transaction(
         value: block_reward + transaction_fees, // Include transaction fees
     };
     let miner_output2 = TransactionOutput {
-        scriptpubkey:calculate_witness_commitment(Transactions).to_string(), // Use the generated script 
+        scriptpubkey:calculate_witness_commitment(transactions).to_string(), // Use the generated script 
         scriptpubkey_asm: String::from(""), // You would need to fill this if required
         scriptpubkey_type: String::from(""),
         scriptpubkey_address: String::from(""), // Derive if needed
@@ -63,22 +65,21 @@ pub fn construct_coinbase_transaction(
     
     coinbase_transaction
 }
-fn create_p2pkh_script(public_key_hash: &str) -> String {
-    // Placeholder - you would need the logic to generate a valid P2PKH script 
-    // based on the public key hash. This involves specific opcodes and formatting
-    format!("OP_DUP OP_HASH160 {} OP_EQUALVERIFY OP_CHECKSIG", public_key_hash) 
-}
+
 
 
 fn calculate_witness_commitment(transactions:Vec<Transaction>) -> String {
    
    let mut wtxids:Vec<String> = Vec::new();
+   // witness for coinbase  transaction
    wtxids.push("0000000000000000000000000000000000000000000000000000000000000000".to_string());
   for t in transactions {
     let wtxid = wtxid_data(t);
     wtxids.push(wtxid);
   }
     let mut merkle_root = merkle_root(wtxids);
+
+    // witness reserved value of coinbase transaction
 merkle_root.push_str("0000000000000000000000000000000000000000000000000000000000000000");
 
 let  witness_commitment = double_sha256(merkle_root);
@@ -86,31 +87,7 @@ let mut wit_new=String::from("6a24aa21a9ed".to_string());
 wit_new.push_str(&witness_commitment);
 wit_new
 }
-fn merkle_root(txids: Vec<String>) -> String {
-    // Exit Condition: Stop recursion when we have one hash result left
-    if txids.len() == 1 {
-        // Convert the result to a string and return it
-        return txids[0].clone();
-    }
 
-    // Keep an array of results
-    let mut result = Vec::new();
-
-    // Split up array of hashes in to pairs
-    for chunk in txids.chunks(2) {
-        let concat = match chunk.len() {
-            2 => chunk[0].clone() + &chunk[1],
-            1 => chunk[0].clone() + &chunk[0], // Concatenate with itself if there is no pair
-            _ => panic!("Unexpected length"),
-        };
-
-        // Hash the concatenated pair and add to results array
-        result.push(double_sha256(concat));
-    }
-
-    // Recursion: Do the same thing again for these results
-    merkle_root(result)
-}
 
 fn wtxid_data(t: Transaction) -> String {
     
@@ -204,7 +181,7 @@ fn wtxid_data(t: Transaction) -> String {
 
 
             // number of witness
-            let mut witness_cnt=t.vin[i].witness.len();
+            let  witness_cnt=t.vin[i].witness.len();
             witness.push_str(&int_to_varint(witness_cnt as u64));
             for j in 0..t.vin[i].witness.len() {
                 let pub_key_len =t.vin[i].witness[j].len() / 2;
@@ -250,57 +227,4 @@ fn wtxid_data(t: Transaction) -> String {
     let wtxid = double_sha256(transaction_data);
     wtxid
     
-}
-fn convert_to_4bytes(num:u32)->String{
-
-    let mut bytes = vec![];
-    bytes.extend_from_slice(&(num as u32).to_le_bytes());
- 
-     // Convert the bytes to a hexadecimal string
-     let hex_string = hex::encode(&bytes);
-        hex_string
-}
-fn convert_to_8bytes(num:u32)->String{
-
-    let mut bytes = vec![];
-    bytes.extend_from_slice(&(num as u64).to_le_bytes());
- 
-     // Convert the bytes to a hexadecimal string
-     let hex_string = hex::encode(&bytes);
-        hex_string
-}
-
-fn int_to_varint(n: u64) -> String {
-    
-    if n <= 252 {  // 0xFC
-        return hex::encode (vec![n as u8]);
-    } else if n <= 65535 {  // 0xFFFF
-        let mut bytes = vec![0xFD];
-        bytes.extend_from_slice(&(n as u16).to_le_bytes());
-        return  hex::encode (bytes);
-    } else if n <= 4294967295 {  // 0xFFFFFFFF
-        let mut bytes = vec![0xFE];
-        bytes.extend_from_slice(&(n as u32).to_le_bytes());
-        return hex::encode (bytes);
-    } else {
-        let mut bytes = vec![0xFF];
-        bytes.extend_from_slice(&n.to_le_bytes());
-        return hex::encode (bytes);
-    }
-}
-fn double_sha256(data:String) -> String {
-    // Convert the hexadecimal string to a byte array.
-    let bytes = hex::decode(data).unwrap();
-
-    // Calculate the SHA-256 hash of the byte array.
-    let hash = Sha256::digest(&bytes);
-
-    // Calculate the double SHA-256 hash of the byte array.
-    let double_hash = Sha256::digest(&hash);
-
-    // Convert the hash to a hexadecimal string.
-    let hex_string = hex::encode(double_hash);
-
-    hex_string
-
 }
