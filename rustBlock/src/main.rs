@@ -138,6 +138,7 @@ fn convert_to_8bytes(num:u32)->String{
         serialized_tx.push_str(int_to_varint(scriptpubkey_len as u64).as_str());
         // scriptPubKey
         serialized_tx.push_str(&t.vout[i].scriptpubkey);
+        // println!("{}",t.vout[i].scriptpubkey);
     }
     // witness for coinbase
     serialized_tx.push_str("01200000000000000000000000000000000000000000000000000000000000000000");
