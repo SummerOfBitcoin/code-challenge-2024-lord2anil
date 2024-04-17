@@ -82,7 +82,7 @@ fn calculate_witness_commitment(transactions:Vec<Transaction>) -> String {
 merkle_root.push_str("0000000000000000000000000000000000000000000000000000000000000000");
 
 let  witness_commitment = double_sha256(merkle_root);
-let mut wit_new=String::from("aa21a9ed".to_string());
+let mut wit_new=String::from("6a24aa21a9ed".to_string());
 wit_new.push_str(&witness_commitment);
 wit_new
 }
