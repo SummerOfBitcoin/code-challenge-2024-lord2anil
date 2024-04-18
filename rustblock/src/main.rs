@@ -40,7 +40,7 @@ fn serialize_block_header(block: &Block) -> String {
 }
 
 fn main() {
-    let folder_path = "../mempool2";
+    let folder_path = "../mempool";
 
     let mut transactions: Vec<Transaction> = Vec::new();
 

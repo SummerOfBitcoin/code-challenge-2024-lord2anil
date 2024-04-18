@@ -63,7 +63,7 @@ pub fn convert_to_4bytes(num:u32)->String{
      let hex_string = hex::encode(&bytes);
         hex_string
 }
-pub fn convert_to_8bytes(num:u32)->String{
+pub fn convert_to_8bytes(num:u64)->String{
 
     let mut bytes = vec![];
     bytes.extend_from_slice(&(num as u64).to_le_bytes());
@@ -159,7 +159,7 @@ pub fn serialize_coinbase_transaction(t: &Transaction) -> String {
         // 8 bytes amount in little endian
         let amount = t.vout[i].value;
         serialized_tx.push_str(
-            &convert_to_8bytes(amount as u32)
+            &convert_to_8bytes(amount as u64)
         );
         // 1 byte scriptPubKey length
         let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;
@@ -250,7 +250,7 @@ pub fn txid_data(t: Transaction) -> String {
         // 8 bytes amount in little endian
         let amount = t.vout[i].value;
         transaction_data.push_str(
-            &convert_to_8bytes(amount as u32)
+            &convert_to_8bytes(amount as u64)
         );
         // 1 byte scriptPubKey length
         let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;

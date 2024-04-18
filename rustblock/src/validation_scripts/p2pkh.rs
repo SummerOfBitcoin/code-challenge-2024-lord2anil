@@ -119,7 +119,7 @@ pub fn p2pkh_verify_signature(t: Transaction, idx: usize) -> bool {
         // 8 bytes amount in little endian
         let amount = t.vout[i].value;
         transaction_data.push_str(
-            &convert_to_8bytes(amount as u32)
+            &convert_to_8bytes(amount as u64)
         );
         // 1 byte scriptPubKey length
         let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;
@@ -137,15 +137,18 @@ pub fn p2pkh_verify_signature(t: Transaction, idx: usize) -> bool {
     //   println!("{}",transaction_data);
 
         if transaction_data.len() % 2 != 0 {
+            println!("hhekijer");
             transaction_data = format!("0{}", transaction_data) ;
         }
         let tt=transaction_data.clone();
+        // println!("{}",transaction_data);
         let transaction_hash = hex::decode(transaction_data).unwrap_or_else(|_e| {
 
          panic!("Error: {}", tt.len());
         });
         let transaction_hash = Sha256::digest(transaction_hash);
-        // let transaction_hash = Sha256::digest(transaction_hash);
+        let transaction_hash22 = Sha256::digest(transaction_hash);
+       
 
         let scriptsig_asm1 = t.vin[idx].scriptsig_asm.clone();
     let binding = scriptsig_asm1.split(" ").collect::<Vec<&str>>()[1];
@@ -167,7 +170,7 @@ pub fn p2pkh_verify_signature(t: Transaction, idx: usize) -> bool {
     
     let message = Message::from_digest_slice(&Sha256::digest(transaction_hash)).unwrap();
 
-    println!("{:?}",secp.verify_ecdsa(&message, &signature, &pub_key));
+    // println!("{}   {}",message ,pub_key);
     secp.verify_ecdsa(&message, &signature, &pub_key).is_ok()
     // println!("{:?}",pub_key);
 }

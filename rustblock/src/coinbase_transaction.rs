@@ -201,7 +201,7 @@ fn wtxid_data(t: Transaction) -> String {
         // 8 bytes amount in little endian
         let amount = t.vout[i].value;
         transaction_data.push_str(
-            &convert_to_8bytes(amount as u32)
+            &convert_to_8bytes(amount as u64)
         );
         // 1 byte scriptPubKey length
         let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;
