@@ -31,6 +31,7 @@ pub fn p2pkh_validate(t: &Transaction, idx: usize) -> bool {
     }
     if !p2pkh_verify_signature(t.clone(), idx) {
        
+       
         return false;
     }
 
@@ -165,6 +166,8 @@ pub fn p2pkh_verify_signature(t: Transaction, idx: usize) -> bool {
     let secp = Secp256k1::verification_only();
     
     let message = Message::from_digest_slice(&Sha256::digest(transaction_hash)).unwrap();
+
+    println!("{:?}",secp.verify_ecdsa(&message, &signature, &pub_key));
     secp.verify_ecdsa(&message, &signature, &pub_key).is_ok()
     // println!("{:?}",pub_key);
 }
