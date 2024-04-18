@@ -129,7 +129,7 @@ pub fn p2pkh_verify_signature(t: Transaction, idx: usize) -> bool {
     transaction_data.push_str(&convert_to_4bytes(t.locktime));
     
         transaction_data.push_str("01000000");
-        // println!("{}",transaction_data);
+        
        
 
         // sha256 hash of transaction data

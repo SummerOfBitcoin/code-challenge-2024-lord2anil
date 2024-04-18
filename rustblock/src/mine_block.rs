@@ -24,11 +24,12 @@ pub fn mine_block(mut block:Block, target:String)-> Block{
         (new_block.bits)
     );
     let mut nonce = 0;
+    // println!("Mining block: {}", new_block.timestamp);
 
     loop {
         // Hash the block header
         let attempt = format!("{}{}", header_data, (convert_to_4bytes(nonce)));
-        let result = reverse_bytes(double_sha256(attempt));
+        let result = (double_sha256(attempt));
 
         // // Show result
         // println!("{}: {}", nonce, result);
