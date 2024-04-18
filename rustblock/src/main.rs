@@ -82,6 +82,7 @@ fn main() {
     }
     valid_file_names.pop();
     let mut p=true;
+    let xxxx =valid_file_names.len()-1;
     for path in valid_file_names {
        if p==true {
            p=false;
@@ -105,10 +106,11 @@ fn main() {
 
         transactions.push(transaction);
     }
+    
 
     // transactions = validate_transactions(&transactions).clone();
 
-    // println!("{:?} {x}", transactions.len());
+    println!("{:?} { }", transactions.len(),xxxx);
 
     let coinbase_transaction: Transaction =
         construct_coinbase_transaction(6, 1, transactions.clone()); // Example block reward and transaction fees
