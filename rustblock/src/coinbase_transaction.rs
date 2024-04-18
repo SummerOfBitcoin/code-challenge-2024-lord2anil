@@ -117,7 +117,7 @@ fn wtxid_data(t: Transaction) -> String {
    
     for i in 0..t.vin.len() {
        
-        if t.vin[i].prevout.scriptpubkey_type=="p2pkh".to_string()  || t.vin[i].prevout.scriptpubkey_type=="p2sh".to_string(){
+        if t.vin[i].witness.len() == 0 {
             // 32 bytes prevout hash txid as little endian, convert to little endian
             // Decode the hex string to a byte array.
             let hex_string = t.vin[i].txid.clone();
