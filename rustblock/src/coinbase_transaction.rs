@@ -28,6 +28,7 @@ pub fn construct_coinbase_transaction(
         scriptsig: String::from("03233708184d696e656420627920416e74506f6f6c373946205b8160a4256c0000946e0100"), // Empty script signature for coinbase input
         scriptsig_asm: String::from(""),
         witness: wit,
+        inner_redeemscript_asm: String::from(""),
         is_coinbase: true,
         sequence: 0xFFFFFFFF, // Set a high sequence number for coinbase input
     };

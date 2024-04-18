@@ -22,6 +22,8 @@ pub struct TransactionInput {
     pub scriptsig_asm: String,
     #[serde(default)]
     pub witness: Vec<String>,
+    #[serde(default)]
+    pub inner_redeemscript_asm: String,
     pub is_coinbase: bool,
     pub sequence: u32,
 }
