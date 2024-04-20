@@ -21,6 +21,9 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
         if is_valid_transaction(transaction) {
             valid_transactions.push(transaction.clone());
         }
+        if valid_transactions.len() == 1000 {
+            break;
+        }
     }
 
     valid_transactions
@@ -62,7 +65,7 @@ fn is_valid_transaction(t: &Transaction) -> bool {
         if t.vin[i].prevout.scriptpubkey_type == "v0_p2wpkh".to_string() {
             
             if !p2wpkh_validate(t, i) {
-                println!("invalid signature");
+           
                 
                 return false;
             }
