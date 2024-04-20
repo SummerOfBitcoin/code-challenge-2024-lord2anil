@@ -216,6 +216,8 @@ fn wtxid_data(t: Transaction) -> String {
     
     if is_segwit {
         transaction_data.push_str(&witness);
+    transaction_data.insert_str(0,"0001");
+
         
         
     }
