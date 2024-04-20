@@ -126,7 +126,7 @@ fn main() {
     println!("{:?} { }", transactions.len(),x);
 
     let coinbase_transaction: Transaction =
-        construct_coinbase_transaction(6, 1, transactions.clone()); // Example block reward and transaction fees
+        construct_coinbase_transaction(19394, 1, transactions.clone()); // Example block reward and transaction fees
     transactions.insert(0, coinbase_transaction);
     let block = assemble_block(transactions);
 
