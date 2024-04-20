@@ -5,6 +5,7 @@ use secp256k1::ecdsa::Signature;
 use secp256k1::{Message, PublicKey, Secp256k1};
 use sha2::{Digest, Sha256};
 
+use crate::validation_scripts::p2wpkh;
 use crate::Transaction;
 
 
@@ -21,7 +22,7 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
         if is_valid_transaction(transaction) {
             valid_transactions.push(transaction.clone());
         }
-        if valid_transactions.len() == 1500 {
+        if valid_transactions.len() == 2000 {
             break;
         }
     }
@@ -44,20 +45,26 @@ fn is_valid_transaction(t: &Transaction) -> bool {
     if t.vin.len() == 0 || t.vout.len() == 0 {
         return false;
     }
-    let mut cnt=0;
+    let mut p2wpkh=0;
+    let mut p2pkh=0;
     for i in 0..t.vin.len() {
         // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
        
         if t.vin[i].prevout.scriptpubkey_type != "v0_p2wpkh".to_string() {
             
-           cnt=cnt+1;
+            p2wpkh=p2wpkh+1;
         }
+        if t.vin[i].prevout.scriptpubkey_type != "p2pkh".to_string() {
+            
+            p2pkh=p2pkh+1;
+        }
+
     }
     
-    if cnt>0{
-        return false;
-    }
+    
     // println!(" this is pwpkh transaction ");
+    if p2wpkh==0{
+
 
     for i in 0..t.vin.len() {
         // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
@@ -70,7 +77,28 @@ fn is_valid_transaction(t: &Transaction) -> bool {
                 return false;
             }
         }
+    }}
+    else if p2pkh==0{
+        for i in 0..t.vin.len() {
+            // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
+           
+            if t.vin[i].prevout.scriptpubkey_type == "p2pkh".to_string() {
+                
+                if !p2pkh_validate(t, i) {
+               
+                    
+                    return false;
+                }
+            }
+        }
     }
+    else{
+        return false;
+    }
+
+
+
+
     // println!("{}",t.vin[0].txid);
     true
 }
