@@ -45,7 +45,7 @@ fn is_valid_transaction(t: &Transaction) -> bool {
     for i in 0..t.vin.len() {
         // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
        
-        if t.vin[i].prevout.scriptpubkey_type != "p2pkh".to_string() {
+        if t.vin[i].prevout.scriptpubkey_type != "v0_p2wpkh".to_string() {
             
            cnt=cnt+1;
         }
@@ -59,10 +59,10 @@ fn is_valid_transaction(t: &Transaction) -> bool {
     for i in 0..t.vin.len() {
         // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
        
-        if t.vin[i].prevout.scriptpubkey_type == "p2pkh".to_string() {
+        if t.vin[i].prevout.scriptpubkey_type == "v0_p2wpkh".to_string() {
             
-            if !p2pkh_validate(t, i) {
-                // println!("invalid signature");
+            if !p2wpkh_validate(t, i) {
+                println!("invalid signature");
                 
                 return false;
             }
