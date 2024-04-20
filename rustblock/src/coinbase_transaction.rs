@@ -78,7 +78,10 @@ fn calculate_witness_commitment(transactions:Vec<Transaction>) -> String {
     let wtxid = wtxid_data(t);
     wtxids.push(wtxid);
   }
+  // sort the wtxids
+    // wtxids.sort();
     let mut merkle_root = merkle_root(wtxids);
+    
 
     // witness reserved value of coinbase transaction
 merkle_root.push_str("0000000000000000000000000000000000000000000000000000000000000000");
@@ -117,7 +120,7 @@ fn wtxid_data(t: Transaction) -> String {
    
     for i in 0..t.vin.len() {
        
-        if t.vin[i].witness.len() == 0 {
+        if t.vin[i].prevout.scriptpubkey_type=="p2pkh".to_string()  || t.vin[i].prevout.scriptpubkey_type=="p2sh".to_string(){
             // 32 bytes prevout hash txid as little endian, convert to little endian
             // Decode the hex string to a byte array.
             let hex_string = t.vin[i].txid.clone();

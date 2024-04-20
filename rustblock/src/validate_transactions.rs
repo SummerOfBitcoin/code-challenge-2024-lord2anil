@@ -9,9 +9,10 @@ use crate::Transaction;
 
 
 
-use super::utiles::{convert_to_4bytes, convert_to_8bytes, int_to_varint};
+
 
 use super::validation_scripts::p2pkh::p2pkh_validate;
+use super::validation_scripts::p2wpkh::p2wpkh_validate;
 
 
 pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
@@ -49,9 +50,11 @@ fn is_valid_transaction(t: &Transaction) -> bool {
            cnt=cnt+1;
         }
     }
+    
     if cnt>0{
         return false;
     }
+    // println!(" this is pwpkh transaction ");
 
     for i in 0..t.vin.len() {
         // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe

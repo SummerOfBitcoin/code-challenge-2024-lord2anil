@@ -1,3 +1,4 @@
+use std::slice::Windows;
 
 use ripemd::Ripemd160;
 use secp256k1::ecdsa::Signature;
@@ -11,10 +12,11 @@ use crate::Transaction;
 use crate::utiles::{convert_to_4bytes, convert_to_8bytes, int_to_varint};
 
 
-pub fn p2pkh_validate(t: &Transaction, idx: usize) -> bool {
-    let scriptsig_asm1 = t.vin[idx].scriptsig_asm.clone();
-    let binding = scriptsig_asm1.split(" ").collect::<Vec<&str>>();
-    let pub_key = binding.last().unwrap();
+
+pub fn p2wpkh_validate(t: &Transaction, idx: usize) -> bool {
+    let witness = t.vin[idx].witness.clone();
+    
+    let pub_key = witness.last().unwrap();
     let pub_key = hex::decode(pub_key).unwrap();
     let pub_key_hash256 = Sha256::digest(pub_key);
     let pub_key_ripemd160 = Ripemd160::digest(&pub_key_hash256);
@@ -23,22 +25,26 @@ pub fn p2pkh_validate(t: &Transaction, idx: usize) -> bool {
         .prevout
         .scriptpubkey_asm
         .split(" ")
-        .collect::<Vec<&str>>()[3];
+        .collect::<Vec<&str>>()[2];
     // println!("{}   {}", pub_key_ripemd160_hex, pub_key_hash);
     if pub_key_ripemd160_hex != pub_key_hash {
-       
-        return false;
-    }
-    if !p2pkh_verify_signature(t.clone(), idx) {
-       
+        
        
         return false;
     }
 
+    if !p2wpkh_verify_signature(t.clone(), idx) {
+    //    println!("{}","signature verification failed");
+       
+        return false;
+    }
+   
+
     
     true
 }
-pub fn p2pkh_verify_signature(t: Transaction, idx: usize) -> bool {
+
+ fn p2wpkh_verify_signature(t: Transaction, idx: usize) -> bool {
     let mut transaction_data = String::new();
     // 4 bits version, in little endian
     transaction_data.push_str(
@@ -136,10 +142,7 @@ pub fn p2pkh_verify_signature(t: Transaction, idx: usize) -> bool {
         // sha256 hash of transaction data
     //   println!("{}",transaction_data);;
 
-        if transaction_data.len() % 2 != 0 {
-            println!("hhekijer");
-            transaction_data = format!("0{}", transaction_data) ;
-        }
+     
         let tt=transaction_data.clone();
         // println!("{}",transaction_data);
         let transaction_hash = hex::decode(transaction_data).unwrap_or_else(|_e| {
@@ -147,11 +150,11 @@ pub fn p2pkh_verify_signature(t: Transaction, idx: usize) -> bool {
          panic!("Error: {}", tt.len());
         });
         let transaction_hash = Sha256::digest(transaction_hash);
-        let transaction_hash22 = Sha256::digest(transaction_hash);
+        // let transaction_hash22 = Sha256::digest(transaction_hash);
        
 
-        let scriptsig_asm1 = t.vin[idx].scriptsig_asm.clone();
-    let binding = scriptsig_asm1.split(" ").collect::<Vec<&str>>()[1];
+        let witness = t.vin[idx].witness.clone();
+    let binding =witness[0].clone();
    
 
     let signature_bytes = hex::decode(binding).unwrap(); // Replace hex with your encoding format if different
@@ -162,8 +165,8 @@ pub fn p2pkh_verify_signature(t: Transaction, idx: usize) -> bool {
         Err(e) => panic!("Error: {:?}", e),
     };
     //  println!("{:?}",signature);
-    let binding = t.vin[idx].scriptsig_asm.split(" ").collect::<Vec<&str>>();
-    let pub_key = binding.last().unwrap();
+ 
+    let pub_key = witness.last().unwrap();
     let pub_key = hex::decode(pub_key).unwrap();
     let pub_key = PublicKey::from_slice(&pub_key).unwrap();
     let secp = Secp256k1::verification_only();

@@ -25,7 +25,8 @@ pub struct Block {
 
 pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
     // Calculate the merkle root of the transactions
-    let  txids = calculate_txid(&transactions);
+    let mut  txids = calculate_txid(&transactions);
+    // txids.sort();
 
   
 
