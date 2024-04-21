@@ -40,3 +40,4 @@ pub fn assemble_block(transactions: Vec<Transaction>) -> Block {
 
     block
 }
+

@@ -9,7 +9,7 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
         if is_valid_transaction(transaction) {
             valid_transactions.push(transaction.clone());
         }
-        if valid_transactions.len() == 2620 {
+        if valid_transactions.len() == 2630 {
             break;
         }
     }

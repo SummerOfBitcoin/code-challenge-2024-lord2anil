@@ -67,6 +67,9 @@ fn main() {
     // Serialize the coinbase transaction
     let coinbase_tx = serialize_coinbase_transaction(&mined_block.transactions[0]);
     let txids = calculate_txids(&mined_block.transactions);
+     // convert txids in reverse order to bytes
+     let txids:Vec<String> = txids.iter().map(|txid| reverse_bytes(txid.clone())).collect();
+
     // Write block data to output.txt file
     write_to_output_file(block_header, &coinbase_tx, txids);
 }
