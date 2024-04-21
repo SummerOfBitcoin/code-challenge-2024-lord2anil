@@ -22,7 +22,7 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
         if is_valid_transaction(transaction) {
             valid_transactions.push(transaction.clone());
         }
-        if valid_transactions.len() == 2600 {
+        if valid_transactions.len() == 2650 {
             break;
         }
     }
@@ -79,18 +79,19 @@ fn is_valid_transaction(t: &Transaction) -> bool {
         }
     }}
     else if p2pkh==0{
-        for i in 0..t.vin.len() {
-            // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
+        // for i in 0..t.vin.len() {
+        //     // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
            
-            if t.vin[i].prevout.scriptpubkey_type == "p2pkh".to_string() {
+        //     if t.vin[i].prevout.scriptpubkey_type == "p2pkh".to_string() {
                 
-                if !p2pkh_validate(t, i) {
+        //         if !p2pkh_validate(t, i) {
                
                     
-                    return false;
-                }
-            }
-        }
+        //             return false;
+        //         }
+        //     }
+        // }
+        return false;
     }
     else{
         return false;
