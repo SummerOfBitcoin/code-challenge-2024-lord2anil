@@ -1,4 +1,5 @@
 # Update this file to run your own code
 #!/bin/bash
 cd rustblock
-cargo run
+cargo build --release
+./target/release/rustblock
