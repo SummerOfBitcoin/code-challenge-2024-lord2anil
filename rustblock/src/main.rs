@@ -19,7 +19,6 @@ use utiles::{
     calculate_txids, reverse_bytes, serialize_block_header, serialize_coinbase_transaction,
     write_to_output_file,
 };
-
 fn main() {
     let folder_path = "../mempool";
 
@@ -36,12 +35,15 @@ fn main() {
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
 
-        let transaction: Transaction = match serde_json::from_str::<Transaction>(&data) {
+        let mut transaction: Transaction = match serde_json::from_str::<Transaction>(&data) {
             Ok(result) => result,
             Err(_e) => {
                 continue;
             }
         };
+        // calculate the fees
+        let fees = calculate_fees(&transaction);
+        transaction.fees = fees;
 
         transactions.push(transaction);
     }
@@ -49,6 +51,9 @@ fn main() {
     transactions = validate_transactions(&transactions).clone();
 
     println!("{:?} { }", transactions.len(), x);
+
+    // sort the transactions by fees, max fees first
+    transactions.sort_by(|a, b| b.fees.cmp(&a.fees));
 
     // Construct the coinbase transaction
     let coinbase_transaction: Transaction =
@@ -72,4 +77,21 @@ fn main() {
 
     // Write block data to output.txt file
     write_to_output_file(block_header, &coinbase_tx, txids);
+}
+
+
+// calculate the fees
+fn calculate_fees(transaction: &Transaction) -> u64 {
+    let mut total_input: u64 = 0;
+    let mut total_output: u64 = 0;
+
+    for input in &transaction.vin {
+        total_input += input.prevout.value;
+    }
+
+    for output in &transaction.vout {
+        total_output += output.value;
+    }
+
+    total_input - total_output
 }

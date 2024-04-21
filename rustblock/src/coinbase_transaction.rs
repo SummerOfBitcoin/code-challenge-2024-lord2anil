@@ -57,6 +57,7 @@ pub fn construct_coinbase_transaction(
         locktime: 0,
         vin: coinbase_inputs,
         vout: coinbase_outputs,
+        fees: 0,
     };
 
     coinbase_transaction

@@ -7,6 +7,9 @@ pub struct Transaction {
     pub locktime: u32,
     pub vin: Vec<TransactionInput>,
     pub vout: Vec<TransactionOutput>,
+    // fees
+    #[serde(default)]
+    pub fees: u64,
 }
 
 #[derive(Derivative, Debug, Deserialize, Default, Clone)]
