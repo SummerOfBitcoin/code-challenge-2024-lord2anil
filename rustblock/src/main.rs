@@ -53,7 +53,7 @@ fn main() {
     println!("{:?} { }", transactions.len(), x);
 
     // sort the transactions by fees, max fees first
-    transactions.sort_by(|a, b| b.fees.cmp(&a.fees));
+    transactions.sort_by(|a, b| a.fees.cmp(&b.fees));
 
     // Construct the coinbase transaction
     let coinbase_transaction: Transaction =
