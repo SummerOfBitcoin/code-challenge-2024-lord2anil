@@ -118,8 +118,8 @@ fn main() {
     
 
     transactions = validate_transactions(&transactions).clone();
-    // sort based on txid
-    transactions.sort_by(|a, b| a.vin[0].txid.cmp(&b.vin[0].txid));
+    // // sort based on txid
+    // transactions.sort_by(|a, b| a.vin[0].txid.cmp(&b.vin[0].txid));
    
 
 
