@@ -52,7 +52,7 @@ fn main() {
 
     // Construct the coinbase transaction
     let coinbase_transaction: Transaction =
-        construct_coinbase_transaction(25000, 1, transactions.clone());
+        construct_coinbase_transaction(200000, 100000, transactions.clone());
     transactions.insert(0, coinbase_transaction);
     let block = assemble_block(transactions);
 
