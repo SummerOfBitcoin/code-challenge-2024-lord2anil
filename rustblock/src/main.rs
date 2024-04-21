@@ -10,44 +10,16 @@ use coinbase_transaction::*;
 use validate_transactions::validate_transactions;
 mod transacton_struct;
 mod utiles;
-
-
 use transacton_struct::Transaction;
 mod mine_block;
-use mine_block::*;
-use std::path::PathBuf;
-// mod validation_scripts::{p2pkh};
-use std::io::BufRead;
 use mine_block::mine_block;
 mod validation_scripts;
 
 
 use utiles::{
-    convert_to_4bytes, reverse_bytes, serialize_coinbase_transaction, txid_data,
+    serialize_block_header, reverse_bytes, serialize_coinbase_transaction, txid_data,
     write_to_output_file,
 };
-
-fn serialize_block_header(block: &Block) -> String {
-    // println!(
-    //     "{}  {} {}  {}  {}  {}",
-    //     (block.version.clone()),
-    //     (block.prev_block_hash.clone()),
-    //     (block.merkle_root.clone()),
-    //     (block.timestamp.clone()),
-    //     (block.bits.clone()),
-    //     (convert_to_4bytes(block.nonce))
-    // );
-    format!(
-        "{}{}{}{}{}{}",
-        (block.version.clone()),
-        (block.prev_block_hash.clone()),
-        (block.merkle_root.clone()),
-        (block.timestamp.clone()),
-        (block.bits.clone()),
-        (convert_to_4bytes(block.nonce))
-    )
-
-}
 
 fn main() {
     let folder_path = "../mempool";
@@ -68,65 +40,21 @@ fn main() {
         let transaction: Transaction = match serde_json::from_str::<Transaction>(&data) {
             Ok(result) => result,
             Err(_e) => {
-                //    println!("{}",e);
                 continue;
             }
         };
        
         transactions.push(transaction);
-    }
-
-    // let sample_file_name="../valid.txt";
-
-    // // Read the file names from t.txt, line by line
-    // let file = File::open(sample_file_name).unwrap();
-    // let reader = std::io::BufReader::new(file);
-    // let mut valid_file_names: Vec<PathBuf> = Vec::new();
-
-    // for line in reader.lines() {
-    //     let line = line.unwrap();
-    //     let pp = format!("../mempool/{}", line);
-    //     let path = PathBuf::from(pp); // Construct PathBuf directly
-    //     valid_file_names.push(path);
-    // }
-    // valid_file_names.pop();
-    // let mut p=true;
-    // let xxxx =valid_file_names.len()-1;
-    // for path in valid_file_names {
-    //    if p==true {
-    //        p=false;
-    //        continue;
-    //    }
-    //   x=x+1;
-    //     let mut file = File::open(path).unwrap();
-    //     let mut data = String::new();
-    //     file.read_to_string(&mut data).unwrap();
-
-    //     let transaction: Transaction = match serde_json::from_str::<Transaction>(&data) {
-
-    //         Ok(result) => result,
-    //         Err(_e) => {
-
-    //         //    println!("{}",e);
-    //             continue;
-    //         }
-
-    //     };
-
-    //     transactions.push(transaction);
-    // }
+    }   
     
 
     transactions = validate_transactions(&transactions).clone();
-    // // sort based on txid
-    // transactions.sort_by(|a, b| a.vin[0].txid.cmp(&b.vin[0].txid));
    
-
-
     println!("{:?} { }", transactions.len(),x);
 
+    // Construct the coinbase transaction
     let coinbase_transaction: Transaction =
-        construct_coinbase_transaction(19394, 1, transactions.clone()); // Example block reward and transaction fees
+        construct_coinbase_transaction(25000, 1, transactions.clone());
     transactions.insert(0, coinbase_transaction);
     let block = assemble_block(transactions);
 
@@ -140,10 +68,7 @@ fn main() {
 
     // Serialize the coinbase transaction
     let coinbase_tx = serialize_coinbase_transaction(&mined_block.transactions[0]);
-    let mut txids = calculate_txid(&mined_block.transactions);
-    // txids.sort();
-
-    // println!("{}", coinbase_tx);
+    let  txids = calculate_txid(&mined_block.transactions);
     // Write block data to output.txt file
     write_to_output_file(block_header, &coinbase_tx, txids);
 }

@@ -5,7 +5,7 @@
 use crate::{reverse_bytes, Transaction};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use super::utiles::{convert_to_4bytes, convert_to_8bytes, int_to_varint,double_sha256,merkle_root};
+use super::utiles::{convert_to_4bytes, txid_data,merkle_root};
 
 
 
@@ -25,14 +25,8 @@ pub struct Block {
 
 pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
     // Calculate the merkle root of the transactions
-    let mut  txids = calculate_txid(&transactions);
-    // txids.sort();
-
-  
-
+    let  txids = calculate_txid(&transactions);
     let merkle_root = merkle_root(txids.clone());
-
- 
 
     // assemble the block
     let block = Block {
@@ -59,93 +53,93 @@ pub fn assemble_block(transactions: Vec<Transaction>) ->Block {
 
 
 
-fn txid_data(t: Transaction) -> String {
+// fn txid_data(t: Transaction) -> String {
     
-    let mut transaction_data = String::new();
-    // 4 bits version, in little endian
-    transaction_data.push_str(
-        &convert_to_4bytes(t.version)
-    );
+//     let mut transaction_data = String::new();
+//     // 4 bits version, in little endian
+//     transaction_data.push_str(
+//         &convert_to_4bytes(t.version)
+//     );
     
 
  
 
      
-    //  1 byte input count in hexadicimal number, convert to hexadicimal
-    let input_count = t.vin.len();
+//     //  1 byte input count in hexadicimal number, convert to hexadicimal
+//     let input_count = t.vin.len();
 
     
-    transaction_data.push_str(&int_to_varint(input_count as u64));
-    // if len of vin is greater 255, then use verint
+//     transaction_data.push_str(&int_to_varint(input_count as u64));
+//     // if len of vin is greater 255, then use verint
     
    
    
 
    
-    for i in 0..t.vin.len() {
+//     for i in 0..t.vin.len() {
        
         
-            // 32 bytes prevout hash txid as little endian, convert to little endian
-            // Decode the hex string to a byte array.
-            let hex_string = t.vin[i].txid.clone();
-            let bytes = hex::decode(hex_string).unwrap();
+//             // 32 bytes prevout hash txid as little endian, convert to little endian
+//             // Decode the hex string to a byte array.
+//             let hex_string = t.vin[i].txid.clone();
+//             let bytes = hex::decode(hex_string).unwrap();
 
-            // Reverse the order of the bytes.
-            let reversed_bytes = bytes.iter().rev().cloned().collect::<Vec<u8>>();
+//             // Reverse the order of the bytes.
+//             let reversed_bytes = bytes.iter().rev().cloned().collect::<Vec<u8>>();
 
-            // Convert the reversed bytes to a string.
-            let reversed_hex_string = hex::encode(reversed_bytes);
-            transaction_data.push_str(&reversed_hex_string);
+//             // Convert the reversed bytes to a string.
+//             let reversed_hex_string = hex::encode(reversed_bytes);
+//             transaction_data.push_str(&reversed_hex_string);
 
-            // 4 bytes prevout index little endian
+//             // 4 bytes prevout index little endian
             
             
-            let vout = t.vin[i].vout;
-            transaction_data.push_str(
-                &convert_to_4bytes(vout)
-            );
+//             let vout = t.vin[i].vout;
+//             transaction_data.push_str(
+//                 &convert_to_4bytes(vout)
+//             );
 
-            // 1 byte scriptpubkey length\
-            let pub_key_len =t.vin[i].scriptsig.len() / 2;
-            transaction_data.push_str(int_to_varint(pub_key_len as u64).as_str());
-            //pub key
-            transaction_data.push_str(&t.vin[i].scriptsig);
+//             // 1 byte scriptpubkey length\
+//             let pub_key_len =t.vin[i].scriptsig.len() / 2;
+//             transaction_data.push_str(int_to_varint(pub_key_len as u64).as_str());
+//             //pub key
+//             transaction_data.push_str(&t.vin[i].scriptsig);
 
-            // 4 bytes sequence, is always ffffffff
-            transaction_data.push_str(convert_to_4bytes(t.vin[i].sequence).as_str());
+//             // 4 bytes sequence, is always ffffffff
+//             transaction_data.push_str(convert_to_4bytes(t.vin[i].sequence).as_str());
 
             
 
        
-    }
-    // for output
+//     }
+//     // for output
 
    
-    let output_count = t.vout.len();
-    transaction_data.push_str(&int_to_varint(output_count as u64));
-    for i in 0..t.vout.len() {
-        // 8 bytes amount in little endian
-        let amount = t.vout[i].value;
-        transaction_data.push_str(
-            &convert_to_8bytes(amount as u64)
-        );
-        // 1 byte scriptPubKey length
-        let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;
-        transaction_data.push_str(int_to_varint(scriptpubkey_len as u64).as_str());
-        // scriptPubKey
-        transaction_data.push_str(&t.vout[i].scriptpubkey);
-    }
+//     let output_count = t.vout.len();
+//     transaction_data.push_str(&int_to_varint(output_count as u64));
+//     for i in 0..t.vout.len() {
+//         // 8 bytes amount in little endian
+//         let amount = t.vout[i].value;
+//         transaction_data.push_str(
+//             &convert_to_8bytes(amount as u64)
+//         );
+//         // 1 byte scriptPubKey length
+//         let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;
+//         transaction_data.push_str(int_to_varint(scriptpubkey_len as u64).as_str());
+//         // scriptPubKey
+//         transaction_data.push_str(&t.vout[i].scriptpubkey);
+//     }
     
     
    
-    transaction_data.push_str(&convert_to_4bytes(t.locktime));
-    // println!("{}",transaction_data);
+//     transaction_data.push_str(&convert_to_4bytes(t.locktime));
+//     // println!("{}",transaction_data);
 
-    // Calculate the hash of the transaction data
-    let txid = double_sha256(transaction_data);
-    txid
+//     // Calculate the hash of the transaction data
+//     let txid = double_sha256(transaction_data);
+//     txid
     
-}
+// }
 
 
 

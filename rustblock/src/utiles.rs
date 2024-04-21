@@ -5,7 +5,7 @@ use sha2::{Digest, Sha256};
 
 use crate::Transaction;
 use std::io::Write;
-
+use crate::assemble_block::*;
 use std::fs::File;
 
 
@@ -296,3 +296,16 @@ fn write_to_output_file(header:String, coinbase_txid: &str, transaction_txids: V
 }
 
 
+pub fn serialize_block_header(block: &Block) -> String {
+  
+    format!(
+        "{}{}{}{}{}{}",
+        (block.version.clone()),
+        (block.prev_block_hash.clone()),
+        (block.merkle_root.clone()),
+        (block.timestamp.clone()),
+        (block.bits.clone()),
+        (convert_to_4bytes(block.nonce))
+    )
+
+}
