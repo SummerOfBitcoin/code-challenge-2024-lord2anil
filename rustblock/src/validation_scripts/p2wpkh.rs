@@ -1,5 +1,3 @@
-use std::slice::Windows;
-
 use ripemd::Ripemd160;
 use secp256k1::ecdsa::Signature;
 use secp256k1::{Message, PublicKey, Secp256k1};
@@ -60,7 +58,7 @@ fn p2wpkh_verify_signature(t: Transaction, idx: usize) -> bool {
     transaction_data.push_str(&reverse_bytes(t.vin[idx].txid.clone()));
     transaction_data.push_str(&convert_to_4bytes(t.vin[idx].vout));
     // scriptcode
-    // And then the scriptCode, which, in P2WPKH’s case, is 1976a914 <pubkey hash> 88ac 
+    // And then the scriptCode, which, in P2WPKH’s case, is 1976a914 <pubkey hash> 88ac
     let pub_key_hash = t.vin[idx]
         .prevout
         .scriptpubkey_asm
@@ -89,8 +87,6 @@ fn p2wpkh_verify_signature(t: Transaction, idx: usize) -> bool {
     transaction_data.push_str(&convert_to_4bytes(t.locktime));
     // nHashType
     transaction_data.push_str("01000000");
-    
-
 
     let tt = transaction_data.clone();
     // println!("{}",transaction_data);

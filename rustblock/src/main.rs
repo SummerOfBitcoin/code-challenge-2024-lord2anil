@@ -15,9 +15,8 @@ mod mine_block;
 use mine_block::mine_block;
 mod validation_scripts;
 
-
 use utiles::{
-    serialize_block_header, reverse_bytes, serialize_coinbase_transaction, txid_data,
+    calculate_txids, reverse_bytes, serialize_block_header, serialize_coinbase_transaction,
     write_to_output_file,
 };
 
@@ -43,14 +42,13 @@ fn main() {
                 continue;
             }
         };
-       
+
         transactions.push(transaction);
-    }   
-    
+    }
 
     transactions = validate_transactions(&transactions).clone();
-   
-    println!("{:?} { }", transactions.len(),x);
+
+    println!("{:?} { }", transactions.len(), x);
 
     // Construct the coinbase transaction
     let coinbase_transaction: Transaction =
@@ -68,18 +66,7 @@ fn main() {
 
     // Serialize the coinbase transaction
     let coinbase_tx = serialize_coinbase_transaction(&mined_block.transactions[0]);
-    let  txids = calculate_txid(&mined_block.transactions);
+    let txids = calculate_txids(&mined_block.transactions);
     // Write block data to output.txt file
     write_to_output_file(block_header, &coinbase_tx, txids);
-}
-
-// Function to calculate Txids  of  all transactions
-fn calculate_txid(transactions: &[Transaction]) -> Vec<String> {
-    let mut txids = vec![];
-
-    for t in transactions {
-        let txid = txid_data(t.clone());
-        txids.push(reverse_bytes(txid));
-    }
-    txids
 }
