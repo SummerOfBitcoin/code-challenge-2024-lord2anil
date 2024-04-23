@@ -60,7 +60,7 @@ fn main() {
     let mut cnt=0;
      for x in transactions.iter(){
         cnt+=1;
-        if cnt<=3400{
+        if cnt<=3500{
             needed_transactions.push(x.clone());
         }else{
             extra_transactions.push(x.clone());
