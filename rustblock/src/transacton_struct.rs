@@ -10,6 +10,9 @@ pub struct Transaction {
     // fees
     #[serde(default)]
     pub fees: u64,
+    // weight
+    #[serde(default)]
+    pub weight:u64
 }
 
 #[derive(Derivative, Debug, Deserialize, Default, Clone)]

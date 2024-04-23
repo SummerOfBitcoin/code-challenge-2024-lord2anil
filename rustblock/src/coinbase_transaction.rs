@@ -58,6 +58,7 @@ pub fn construct_coinbase_transaction(
         vin: coinbase_inputs,
         vout: coinbase_outputs,
         fees: 0,
+        weight:0
     };
 
     coinbase_transaction

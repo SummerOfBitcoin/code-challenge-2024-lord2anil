@@ -44,13 +44,50 @@ fn main() {
         // calculate the fees
         let fees = calculate_fees(&transaction);
         transaction.fees = fees;
+        // calculate the weight
+        let weight=calculate_weight(&transaction);
+        transaction.weight=weight;
 
         transactions.push(transaction);
     }
 
     // sort the transactions by fees, max fees first
-    transactions.sort_by(|a, b| b.fees.cmp(&a.fees));
+    // transactions.sort_by(|a, b| b.fees.cmp(&a.fees));
     transactions = validate_transactions(&transactions).clone();
+
+    let mut needed_transactions: Vec<Transaction> = Vec::new();
+    let mut extra_transactions: Vec<Transaction> = Vec::new();
+    let mut cnt=0;
+     for x in transactions.iter(){
+        cnt+=1;
+        if cnt<=2600{
+            needed_transactions.push(x.clone());
+        }else{
+            extra_transactions.push(x.clone());
+        }   }
+    for i in 0..needed_transactions.len(){
+        let wt=needed_transactions[i].weight;
+        // find lower bound of that  weight in extra transactions , and if it has hight fees than replace it with that
+        let mut max_fees=0;
+        let mut max_index=0;
+        for j in 0..extra_transactions.len(){
+            if extra_transactions[j].weight<wt{
+                if extra_transactions[j].fees>max_fees{
+                    max_fees=extra_transactions[j].fees;
+                    max_index=j;
+                }
+            }
+        }
+        if max_fees>0{
+            let xx= needed_transactions[i].clone();
+            needed_transactions[i]=extra_transactions[max_index].clone();
+            extra_transactions[max_index]=xx.clone();
+        }
+    }
+    
+       
+
+
 
     println!("{:?} { }", transactions.len(), x);
 
@@ -95,3 +132,22 @@ fn calculate_fees(transaction: &Transaction) -> u64 {
 
     total_input - total_output
 }
+
+
+fn calculate_weight(transaction: &Transaction)->u64{
+    let non_seginput_weight=272;
+    let seg_input_weight=720;
+    let output_weight=124;
+    let mut total_weight:u64=0;
+    for input in &transaction.vin{
+        if input.witness.is_empty(){
+            total_weight+=non_seginput_weight;
+        }else{
+            total_weight+=seg_input_weight;
+        }
+    }
+    total_weight+=output_weight*transaction.vout.len() as u64;
+    total_weight
+    
+}
+
