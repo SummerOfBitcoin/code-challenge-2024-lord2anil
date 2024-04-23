@@ -55,42 +55,10 @@ fn main() {
     // transactions.sort_by(|a, b| b.fees.cmp(&a.fees));
     transactions = validate_transactions(&transactions).clone();
 
-    let mut needed_transactions: Vec<Transaction> = Vec::new();
-    let mut extra_transactions: Vec<Transaction> = Vec::new();
-    let mut cnt=0;
-     for x in transactions.iter(){
-        cnt+=1;
-        if cnt<=3502{
-            needed_transactions.push(x.clone());
-        }else{
-            extra_transactions.push(x.clone());
-        }   }
-    for i in 0..needed_transactions.len(){
-        let wt=needed_transactions[i].weight;
-        // find lower bound of that  weight in extra transactions , and if it has hight fees than replace it with that
-        let mut max_fees=0;
-        let mut max_index=0;
-        for j in 0..extra_transactions.len(){
-            if extra_transactions[j].weight<wt{
-                if extra_transactions[j].fees>max_fees{
-                    max_fees=extra_transactions[j].fees;
-                    max_index=j;
-                }
-            }
-        }
-        if max_fees>0{
-            let xx= needed_transactions[i].clone();
-            needed_transactions[i]=extra_transactions[max_index].clone();
-            extra_transactions[max_index]=xx.clone();
-        }
-    }
     
-       
-
-
-
     println!("{:?} { }", transactions.len(), x);
-    let mut transactions: Vec<Transaction> = needed_transactions.clone();
+    // filter the transactions to get high score
+    let mut transactions: Vec<Transaction> = filter_transactions(&transactions);
 
     // Construct the coinbase transaction
     let coinbase_transaction: Transaction =
@@ -151,3 +119,39 @@ fn calculate_weight(transaction: &Transaction)->u64{
     
 }
 
+fn filter_transactions(transactions: &Vec<Transaction>) -> Vec<Transaction> {
+    let mut needed_transactions: Vec<Transaction> = Vec::new();
+    let mut extra_transactions: Vec<Transaction> = Vec::new();
+    let mut cnt=0;
+     for x in transactions.iter(){
+        cnt+=1;
+        if cnt<=3502{
+            needed_transactions.push(x.clone());
+        }else{
+            extra_transactions.push(x.clone());
+        }   }
+    for i in 0..needed_transactions.len(){
+        let wt=needed_transactions[i].weight;
+        // find lower bound of that  weight in extra transactions , and if it has hight fees than replace it with that
+        let mut max_fees=0;
+        let mut max_index=0;
+        for j in 0..extra_transactions.len(){
+            if extra_transactions[j].weight<wt{
+                if extra_transactions[j].fees>max_fees{
+                    max_fees=extra_transactions[j].fees;
+                    max_index=j;
+                }
+            }
+        }
+        if max_fees>0{
+            let xx= needed_transactions[i].clone();
+            needed_transactions[i]=extra_transactions[max_index].clone();
+            extra_transactions[max_index]=xx.clone();
+        }
+    }
+    
+       
+
+needed_transactions
+
+}
