@@ -90,7 +90,7 @@ fn main() {
 
 
     println!("{:?} { }", transactions.len(), x);
-
+    let mut transactions: Vec<Transaction> = needed_transactions.clone();
 
     // Construct the coinbase transaction
     let coinbase_transaction: Transaction =
