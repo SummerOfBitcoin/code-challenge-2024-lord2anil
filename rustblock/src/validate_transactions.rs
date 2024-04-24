@@ -21,6 +21,7 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
         }
        
     }
+    valid_transactions.pop();
     valid_transactions.push(transactions.last().unwrap().clone());
 
     valid_transactions
