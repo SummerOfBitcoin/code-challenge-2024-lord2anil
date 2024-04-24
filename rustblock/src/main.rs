@@ -29,12 +29,12 @@ fn main() {
         x = x + 1;
         let entry = entry.unwrap();
         let path = entry.path();
-        let path_clone = path.clone(); // Clone the path variable
+        let path_clone = path.clone(); 
 
         let mut file = File::open(path_clone).unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
-
+        // serde_json to parse the json data
         let mut transaction: Transaction = match serde_json::from_str::<Transaction>(&data) {
             Ok(result) => result,
             Err(_e) => {
