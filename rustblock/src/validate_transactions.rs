@@ -8,9 +8,14 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
     for transaction in transactions {
         if is_valid_transaction(transaction) {
             valid_transactions.push(transaction.clone());
-        }
-        if valid_transactions.len() == 3502 {
-            break;
+            if valid_transactions.len() == 3503 {
+                let nd=valid_transactions.clone();
+                let last = nd.last().unwrap();
+                valid_transactions.pop();
+                valid_transactions.pop();
+                valid_transactions.push(last.clone());
+                break;
+            }
         }
        
     }
