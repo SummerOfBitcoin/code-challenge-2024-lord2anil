@@ -6,19 +6,22 @@ use super::validation_scripts::p2wpkh::p2wpkh_validate;
 pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
     let mut valid_transactions: Vec<Transaction> = Vec::new();
     for transaction in transactions {
+        // println!("{}  {}    {}",transaction.fees,transaction.weight,transaction.vin[0].txid);
+         
         if is_valid_transaction(transaction) {
             valid_transactions.push(transaction.clone());
-            if valid_transactions.len() == 3503 {
-                let nd=valid_transactions.clone();
-                let last = nd.last().unwrap();
-                valid_transactions.pop();
-                valid_transactions.pop();
-                valid_transactions.push(last.clone());
+            if valid_transactions.len() == 3501 {
+                // let nd=valid_transactions.clone();
+                // let last = nd.last().unwrap();
+                // valid_transactions.pop();
+                // valid_transactions.pop();
+                // valid_transactions.push(last.clone());
                 break;
             }
         }
        
     }
+    valid_transactions.push(transactions.last().unwrap().clone());
 
     valid_transactions
 }
