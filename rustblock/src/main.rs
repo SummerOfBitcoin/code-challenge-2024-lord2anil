@@ -52,13 +52,14 @@ fn main() {
     }
 
     // sort the transactions by fees, max fees first
-    // transactions.sort_by(|a, b| b.fees.cmp(&a.fees));
+    transactions.sort_by(|a, b| b.weight.cmp(&a.weight));
     transactions = validate_transactions(&transactions).clone();
 
     
     println!("{:?} { }", transactions.len(), x);
     // filter the transactions to get high score
-    let mut transactions: Vec<Transaction> = filter_transactions(&transactions);
+    // let mut transactions: Vec<Transaction> = filter_transactions(&transactions);
+    
 
     // Construct the coinbase transaction
     let coinbase_transaction: Transaction =
