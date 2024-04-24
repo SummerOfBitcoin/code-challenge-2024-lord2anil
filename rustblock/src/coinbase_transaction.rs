@@ -72,8 +72,6 @@ fn calculate_witness_commitment(transactions: Vec<Transaction>) -> String {
         let wtxid = wtxid_data(t);
         wtxids.push(wtxid);
     }
-    // sort the wtxids
-    // wtxids.sort();
     let mut merkle_root = merkle_root(wtxids);
 
     // witness reserved value of coinbase transaction

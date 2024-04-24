@@ -84,11 +84,154 @@ fn is_valid_transaction(t: &Transaction) -> bool {
 }
 ```
 
+
+
 // todo: add the pseudo code of the implementation
 
 
 
+### Creating the coinbase transaction
+ The implementation of the coinbase transaction is in the `rustblock/src/coinbase_transaction.rs' file. The coinbase transaction is a special type of transaction that does not have any inputs and is used to collect the block reward. The coinbase transaction is created by the `create_coinbase_transaction` function in the `rustblock/src/coinbase_transaction.rs` file. The function creates a coinbase transaction with the following structure:   
+  it contains 1 input and 2 outputs. The first output is the block reward and miner fee , second output is for the witness commitment. 
+  the coinbase transaction is created as follows:
+```rust
+pub fn construct_coinbase_transaction(
+    block_reward: u64,
+    transaction_fees: u64,
+    transactions: Vec<Transaction>,
+) -> Transaction {
+   // some other code
+    let mut coinbase_inputs = Vec::new();
+    let coinbase_input = TransactionInput {
+        // There is no previous output for the coinbase transaction so the txid is set to all zeros
+        txid: String::from("0000000000000000000000000000000000000000000000000000000000000000"),
+        vout: 4294967295, // Coinbase transaction does not reference any previous output,any high value can be used
+        prevout: PrevOut {
+           // others fields that are not required for the coinbase transaction , i put empty string 
+            value: 0,
+        },
+        // The coinbase transaction has a special scriptSig field that contains the block height and extra nonce,it is used to collect the block reward. just a random string is used for the scriptSig field.
+        scriptsig: String::from(
+            "03233708184d696e656420627920416e74506f6f6c373946205b8160a4256c0000946e0100",
+        ),
+       // the witness for the input is all zeros '0000000000000000000000000000000000000000000000000000000000000000'
+        witness: wit,
+       // very high value is used for the sequence field
+        sequence: 0xFFFFFFFF,
+    };
+    coinbase_inputs.push(coinbase_input);
 
+    let mut coinbase_outputs = Vec::new();
+    let miner_output = TransactionOutput {
+        scriptpubkey:String::from("41047eda6bd04fb27cab6e7c28c99b94977f073e912f25d1ff7165d9c95cd9bbe6da7e7ad7f2acb09e0ced91705f7616af53bee51a238b7dc527f2be0aa60469d140ac"), // Use the generated script 
+         ... some other fields
+        value: block_reward + transaction_fees
+    };
+    let miner_output2 = TransactionOutput {
+        scriptpubkey: calculate_witness_commitment(transactions).to_string(),
+        // others fields that are not required for the coinbase transaction , i put empty string
+        value: 0,
+    };
+   .....
+}
+```
+The the witness  commitment is calculated by the `calculate_witness_commitment` function in the `rustblock/src/coinbase_transaction.rs` file. The function calculates the witness commitment by hashing the Wtxids (merkle root )of the transactions in the block. The witness commitment is used to commit to the witness data of the block. The witness commitment is calculated as follows:
+```rust
+fn calculate_witness_commitment(transactions: Vec<Transaction>) -> String {
+    let mut wtxids: Vec<String> = Vec::new();
+    // witness for coinbase  transaction
+    wtxids.push("0000000000000000000000000000000000000000000000000000000000000000".to_string());
+    for t in transactions {
+        let wtxid = wtxid_data(t);
+        wtxids.push(wtxid);
+    }
+    let mut merkle_root = merkle_root(wtxids);
+
+    // witness reserved value of coinbase transaction
+    merkle_root.push_str("0000000000000000000000000000000000000000000000000000000000000000");
+
+    let witness_commitment = double_sha256(merkle_root);
+    // fix prefix for witness commitment "6a24aa21a9ed"
+    let mut wit_new = String::from("6a24aa21a9ed".to_string());
+    wit_new.push_str(&witness_commitment);
+    wit_new
+}
+```
+the 'wtxid_data' function in the `rustblock/src/coinbase_transaction.rs` file calculates the Wtxid of the transaction. The Wtxid is calculated by hashing the transaction data. The details of the Wtxid calculation can be found in the `rustblock/src/coinbase_transaction.rs` file.
+
+
+### Assemble the Block
+ Assemble the block by including the coinbase transaction and valid transactions in the block. The block is assembled by creating a block header and adding the coinbase transaction and valid transactions to the block.
+the structure of the block is as follows:
+```rust
+pub struct Block {
+    pub version: String,
+    pub prev_block_hash: String, 
+    pub merkle_root: String,
+    pub timestamp: String,
+    pub bits: String,
+    pub nonce: u32,
+    pub transactions: Vec<Transaction>,
+}
+```
+The sudo code for the block assembly is as follows: `rustblock/src/assemble_block.rs`
+```rust
+pub fn assemble_block(transactions: Vec<Transaction>) -> Block {
+    // Calculate the merkle root of the transactions
+    let txids = calculate_txids(&transactions);
+    let merkle_root = merkle_root(txids.clone());
+
+    // assemble the block
+    let block = Block {
+        version: "04000000".to_string(),
+        prev_block_hash: "0000000000000000000000000000000000000000000000000000000000000000"
+            .to_string(),
+        merkle_root: merkle_root,
+        // unix timestamp
+        timestamp: convert_to_4bytes( SystemTime::now().duration_since(UNIX_EPOCH).unwrap() .as_secs() as u32,),
+        bits: reverse_bytes("1f00ffff".to_string()),
+        nonce: 0,
+        transactions: transactions,
+    };
+
+    block
+}
+```
+The `calculate_txids` function calcultes the txids of the transactions. THe implementation of the function can be found in the `rustblock/src/utiles.rs` file.
+
+The `merkle_root` function calculates the merkle root of the all txids. The implementation of the function can be found in the `rustblock/src/utiles.rs` file.
+
+### Mining the Block
+The mining of the block is done by finding a hash that is less than the difficulty target. The difficulty target is a value that determines the difficulty of mining a block. The block header is created by combining the version, previous block hash, merkle root, timestamp, bits, and nonce fields of the block. The hash of the block header is calculated using the SHA-256 algorithm. The nonce value is adjusted until a valid hash is found that is less than the difficulty target. The implementation of the mining process can be found in the `rustblock/src/mine_block.rs` file.
+
+The sudo code for the mining process is as follows:
+```rust
+pub fn mine_block(mut block: Block, target: String) -> Block {
+   .
+   .
+   .
+    let mut nonce = 0;
+    loop {
+        // Hash the block header
+        let attempt = format!("{}{}", header_data, (convert_to_4bytes(nonce)));
+        let result = reverse_bytes(double_sha256(attempt));
+
+        // Break if the hash is below the target
+        if BigUint::from_str_radix(&result, 16).unwrap()
+            < BigUint::from_str_radix(&target, 16).unwrap()
+        {
+            break;
+        }
+
+        nonce += 1;
+    }
+
+    block.nonce = nonce;
+    return block;
+}
+```
+
+By following the above steps, the program is able to validate transactions, create a coinbase transaction, assemble the block, and mine the block. The block header and the serialized coinbase transaction are written to the `output.txt` file. The transaction IDs of the transactions mined in the block are also written to the `output.txt` file.
 
 
 
