@@ -15,7 +15,7 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
             }
         }
     }
-    while total_weight > 4000000 {
+    while total_weight > 3970000 {
         // remove the first transaction
         total_weight = total_weight - valid_transactions[0].weight as u64;
         valid_transactions.remove(0);
