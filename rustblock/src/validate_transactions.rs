@@ -11,7 +11,6 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
             total_weight = total_weight + transaction.weight as u64;
             valid_transactions.push(transaction.clone());
             if total_weight > 4000000 {
-
                 break;
             }
         }
@@ -20,13 +19,11 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
         // remove the first transaction
         total_weight = total_weight - valid_transactions[0].weight as u64;
         valid_transactions.remove(0);
-        
     }
-    println!("{}",total_weight);
-    
+    println!("{}", total_weight);
+
     valid_transactions
 }
-
 
 fn is_valid_transaction(t: &Transaction) -> bool {
     if t.vin.len() == 0 || t.vout.len() == 0 {

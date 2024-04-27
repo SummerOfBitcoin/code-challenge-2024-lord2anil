@@ -46,7 +46,7 @@ fn main() {
         transaction.fees = fees;
         // calculate the weight
         let weight = calculate_weight(&transaction);
-        transaction.weight = weight as i64;
+        transaction.weight = weight;
         transactions.push(transaction);
     }
 

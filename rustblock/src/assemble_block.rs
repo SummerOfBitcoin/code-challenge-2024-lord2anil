@@ -6,7 +6,7 @@ use super::utiles::{calculate_txids, convert_to_4bytes, merkle_root};
 #[derive(Debug, Clone)]
 pub struct Block {
     pub version: String,
-    pub prev_block_hash: String, 
+    pub prev_block_hash: String,
     pub merkle_root: String,
     pub timestamp: String,
     pub bits: String,
@@ -40,4 +40,3 @@ pub fn assemble_block(transactions: Vec<Transaction>) -> Block {
 
     block
 }
-
