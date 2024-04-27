@@ -5,22 +5,28 @@ use super::validation_scripts::p2wpkh::p2wpkh_validate;
 
 pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
     let mut valid_transactions: Vec<Transaction> = Vec::new();
+    let mut total_weight: u64 = 0;
     for transaction in transactions {
         if is_valid_transaction(transaction) {
+            total_weight = total_weight + transaction.weight as u64;
             valid_transactions.push(transaction.clone());
-            if valid_transactions.len() == 3503 {
-                let nd = valid_transactions.clone();
-                let last = nd.last().unwrap();
-                valid_transactions.pop();
-                valid_transactions.pop();
-                valid_transactions.push(last.clone());
+            if total_weight > 4000000 {
+
                 break;
             }
         }
     }
-
+    while total_weight > 4000000 {
+        // remove the first transaction
+        total_weight = total_weight - valid_transactions[0].weight as u64;
+        valid_transactions.remove(0);
+        
+    }
+    println!("{}",total_weight);
+    
     valid_transactions
 }
+
 
 fn is_valid_transaction(t: &Transaction) -> bool {
     if t.vin.len() == 0 || t.vout.len() == 0 {

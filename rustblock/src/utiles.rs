@@ -261,3 +261,91 @@ pub fn serialize_block_header(block: &Block) -> String {
         (convert_to_4bytes(block.nonce))
     )
 }
+
+// calculate the fees
+pub fn calculate_fees(transaction: &Transaction) -> u64 {
+    let mut total_input: u64 = 0;
+    let mut total_output: u64 = 0;
+
+    for input in &transaction.vin {
+        total_input += input.prevout.value;
+    }
+
+    for output in &transaction.vout {
+        total_output += output.value;
+    }
+
+    total_input - total_output
+}
+
+pub fn calculate_weight(t: &Transaction) -> u64 {
+    let mut total_weight: u64 = 0;
+    let mut segwit_bytes = String::new();
+    let mut non_segwit_bytes = String::new();
+
+    //  1 byte input count in hexadicimal number, convert to hexadicimal
+    let input_count = t.vin.len();
+    non_segwit_bytes.push_str(&int_to_varint(input_count as u64));
+
+    let mut is_segwit = false;
+
+    for i in 0..t.vin.len() {
+        // 32 bytes prevout hash txid as little endian, convert to little endian
+
+        non_segwit_bytes.push_str(&reverse_bytes(t.vin[i].txid.clone()));
+
+        // 4 bytes prevout index little endian
+
+        let vout = t.vin[i].vout;
+        non_segwit_bytes.push_str(&convert_to_4bytes(vout));
+
+        // 1 byte scriptpubkey length\
+        let pub_key_len = t.vin[i].scriptsig.len() / 2;
+        non_segwit_bytes.push_str(int_to_varint(pub_key_len as u64).as_str());
+        //pub key
+        non_segwit_bytes.push_str(&t.vin[i].scriptsig);
+
+        // 4 bytes sequence
+        non_segwit_bytes.push_str(convert_to_4bytes(t.vin[i].sequence).as_str());
+
+        if t.vin[i].prevout.scriptpubkey_type == "p2pkh".to_string()
+            || t.vin[i].prevout.scriptpubkey_type == "p2sh".to_string()
+        {
+            segwit_bytes.push_str("00");
+        } else {
+            is_segwit = true;
+            // number of witness
+            let witness_cnt = t.vin[i].witness.len();
+            segwit_bytes.push_str(&int_to_varint(witness_cnt as u64));
+            for j in 0..t.vin[i].witness.len() {
+                let pub_key_len = t.vin[i].witness[j].len() / 2;
+                segwit_bytes.push_str(int_to_varint(pub_key_len as u64).as_str());
+                segwit_bytes.push_str(&t.vin[i].witness[j]);
+            }
+        }
+    }
+    // for output
+
+    let output_count = t.vout.len();
+    non_segwit_bytes.push_str(&int_to_varint(output_count as u64));
+    for i in 0..t.vout.len() {
+        // 8 bytes amount in little endian
+        let amount = t.vout[i].value;
+        non_segwit_bytes.push_str(&convert_to_8bytes(amount as u64));
+        // 1 byte scriptPubKey length
+        let scriptpubkey_len = t.vout[i].scriptpubkey.len() / 2;
+        non_segwit_bytes.push_str(int_to_varint(scriptpubkey_len as u64).as_str());
+        // scriptPubKey
+        non_segwit_bytes.push_str(&t.vout[i].scriptpubkey);
+    }
+
+    if is_segwit {
+        segwit_bytes.insert_str(0, "0001");
+        total_weight += segwit_bytes.len() as u64 / 2;
+    }
+    non_segwit_bytes.insert_str(0, &convert_to_4bytes(t.version));
+    non_segwit_bytes.push_str(&convert_to_4bytes(t.locktime));
+    total_weight += (non_segwit_bytes.len() as u64 / 2) * 4;
+
+    total_weight
+}
