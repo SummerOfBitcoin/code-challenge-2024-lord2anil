@@ -83,10 +83,57 @@ fn is_valid_transaction(t: &Transaction) -> bool {
     true
 }
 ```
+#### The validation logic for the P2PKH
+The validation logic for the P2PKH transactions is implemented in the `rustblock/src/validation_scripts/p2pkh.rs` file. 
+The  scriptpubkey_asm for the `P2PKH` is <br>
+-> "OP_DUP OP_HASH160 OP_PUSHBYTES_20 ***< PubKeyHash >*** OP_EQUALVERIFY OP_CHECKSIG", <br>
+The pub key and signature can be found in ScriptSig field of the input.<br>
+
+So first we need to verify the ***pubKKeyHash*** , The **Hash** of the public key is calculated by hashing the public key using the SHA-256 and RIPEMD-160 algorithms. The sudocode for the validation of the P2PKH transaction is as follows:
+```rust
+ let pub_key = hex::decode(pub_key).unwrap();
+    let pub_key_hash256 = Sha256::digest(pub_key);
+    let pub_key_ripemd160 = Ripemd160::digest(&pub_key_hash256);
+    let pub_key_ripemd160_hex = hex::encode(pub_key_ripemd160);
+    // This hash should be equal to the pubKeyHash in the scriptPubKey_asm
+    if pub_key_ripemd160_hex != pub_key_hash {
+        return false;
+    }
+```
+The next part in  validation of the P2PKH transaction is to verify the signature. The signature is verified by using the public key and meassage.
+The meassage is the hash of the transaction data. 
+The seriliazed transaction data is calculated by concatenating the version, inputs, outputs, locktime of the transaction and then hashing the concatenated data using the SHA-256 algorithm. 
+The signature is verified using the ECDSE algorithm. The sudocode for the validation of the P2PKH transaction is as follows:
+```rust
+    let tx_data = serialize_transaction_data(t);
+    let pub_key = PublicKey::from_slice(&pub_key).unwrap();
+    let secp = Secp256k1::verification_only();
+    let signature =  Signature::from_der_lax(&signature_bytes)
+    let message = Message::from_digest_slice(&Sha256::digest(transaction_hash)).unwrap();
+    secp.verify_ecdsa(&message, &signature, &pub_key).is_ok()
+```
+In This way the P2PKH transaction is validated.
+
+#### The validation logic for the P2WPKH
+The validation logic for the P2WPKH transactions is implemented in the `rustblock/src/validation_scripts/p2wpkh.rs` file.
+The validation logic for the P2WPKH transactions is similar to the P2PKH transactions. 
+The difference is that the scriptsig field is empty and the witness field contains the signature and public key. 
+As here we are using the Segregated Witness (SegWit) format, the validation logic is slightly different. The way of seriliazing the transaction data is different.
+    Double SHA256 of the serialization of:<br>
+     1. nVersion of the transaction (4-byte little endian)<br>
+     2. hashPrevouts (32-byte hash).<br>
+     3. hashSequence (32-byte hash).<br>
+     4. outpoint (32-byte hash + 4-byte little endian) .<br>
+     5. scriptCode of the input (serialized as scripts inside CTxOuts).<br>
+     6. value of the output spent by this input (8-byte little endian).<br>
+     7. nSequence of the input (4-byte little endian).<br>
+     8. hashOutputs (32-byte hash).<br>
+     9. nLocktime of the transaction (4-byte little endian).<br>
+     10. sighash type of the signature (4-byte little endian).<br>
+    is used as message for the signature verification. <br>
 
 
 
-// todo: add the pseudo code of the implementation
 
 
 
