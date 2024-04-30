@@ -242,6 +242,7 @@ pub fn assemble_block(transactions: Vec<Transaction>) -> Block {
         merkle_root: merkle_root,
         // unix timestamp
         timestamp: convert_to_4bytes( SystemTime::now().duration_since(UNIX_EPOCH).unwrap() .as_secs() as u32,),
+        // this is the bits representation of the target string "0000ffff00000000000000000000000000000000000000000000000000000000"
         bits: reverse_bytes("1f00ffff".to_string()),
         nonce: 0,
         transactions: transactions,

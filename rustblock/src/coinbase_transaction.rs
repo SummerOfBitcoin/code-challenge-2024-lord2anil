@@ -10,9 +10,11 @@ pub fn construct_coinbase_transaction(
     transactions: Vec<Transaction>,
 ) -> Transaction {
     let mut wit = Vec::new();
+    // witness for coinbase  transaction
     wit.push("0000000000000000000000000000000000000000000000000000000000000000".to_string());
     let mut coinbase_inputs = Vec::new();
     let coinbase_input = TransactionInput {
+        // Coinbase transaction does not reference any previous output so txid is all zeros
         txid: String::from("0000000000000000000000000000000000000000000000000000000000000000"),
         vout: 4294967295, // Coinbase transaction does not reference any previous output
         prevout: PrevOut {
@@ -23,6 +25,7 @@ pub fn construct_coinbase_transaction(
             value: 0,
         },
         scriptsig: String::from(
+        
             "03233708184d696e656420627920416e74506f6f6c373946205b8160a4256c0000946e0100",
         ),
         scriptsig_asm: String::from(""),
@@ -34,6 +37,7 @@ pub fn construct_coinbase_transaction(
     coinbase_inputs.push(coinbase_input);
 
     let mut coinbase_outputs = Vec::new();
+    // first output is the reward for the miner
     let miner_output = TransactionOutput {
         scriptpubkey:String::from("41047eda6bd04fb27cab6e7c28c99b94977f073e912f25d1ff7165d9c95cd9bbe6da7e7ad7f2acb09e0ced91705f7616af53bee51a238b7dc527f2be0aa60469d140ac"), // Use the generated script 
         scriptpubkey_asm: String::from(""), 
@@ -41,6 +45,7 @@ pub fn construct_coinbase_transaction(
         scriptpubkey_address: String::from(""),
         value: block_reward + transaction_fees
     };
+    // second output is the witness commitment
     let miner_output2 = TransactionOutput {
         scriptpubkey: calculate_witness_commitment(transactions).to_string(),
         scriptpubkey_asm: String::from(""),

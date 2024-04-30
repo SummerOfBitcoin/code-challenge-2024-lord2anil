@@ -32,7 +32,7 @@ pub fn assemble_block(transactions: Vec<Transaction>) -> Block {
                 .unwrap()
                 .as_secs() as u32,
         ),
-
+        // this is the bits representation of the target string "0000ffff00000000000000000000000000000000000000000000000000000000"
         bits: reverse_bytes("1f00ffff".to_string()),
         nonce: 0,
         transactions: transactions,

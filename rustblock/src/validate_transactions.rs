@@ -15,12 +15,13 @@ pub fn validate_transactions(transactions: &[Transaction]) -> Vec<Transaction> {
             }
         }
     }
+    // remove the first transaction if the total weight is greater than 4,000,000
+    // i am doing "3970000"  this because the last transaction is always the coinbase transaction and i know the weight of the coinbase transaction at this point
     while total_weight > 3970000 {
         // remove the first transaction
         total_weight = total_weight - valid_transactions[0].weight as u64;
         valid_transactions.remove(0);
     }
-    println!("{}", total_weight);
 
     valid_transactions
 }
@@ -31,8 +32,8 @@ fn is_valid_transaction(t: &Transaction) -> bool {
     }
     let mut p2wpkh = 0;
     let mut p2pkh = 0;
+    // i am implemented the script validation for p2wpkh and p2pkh only, 
     for i in 0..t.vin.len() {
-        // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
 
         if t.vin[i].prevout.scriptpubkey_type != "v0_p2wpkh".to_string() {
             p2wpkh = p2wpkh + 1;
@@ -41,11 +42,10 @@ fn is_valid_transaction(t: &Transaction) -> bool {
             p2pkh = p2pkh + 1;
         }
     }
-
-    // println!(" this is pwpkh transaction ");
+// if the transaction is not p2wpkh or p2pkh return false
+// if it is p2wpkh or p2pkh validate the transaction
     if p2wpkh == 0 {
         for i in 0..t.vin.len() {
-            // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
 
             if t.vin[i].prevout.scriptpubkey_type == "v0_p2wpkh".to_string() {
                 if !p2wpkh_validate(t, i) {
@@ -55,7 +55,6 @@ fn is_valid_transaction(t: &Transaction) -> bool {
         }
     } else if p2pkh == 0 {
         for i in 0..t.vin.len() {
-            // println!("{}",t.vin[i].prevout.scriptpubkey_type);brfe
 
             if t.vin[i].prevout.scriptpubkey_type == "p2pkh".to_string() {
                 if !p2pkh_validate(t, i) {
@@ -66,7 +65,5 @@ fn is_valid_transaction(t: &Transaction) -> bool {
     } else {
         return false;
     }
-
-    // println!("{}",t.vin[0].txid);
     true
 }
