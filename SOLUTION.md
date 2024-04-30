@@ -1,8 +1,4 @@
-Apart from the code, you must also publish a `SOLUTION.md` file explaining your solution in the following format:
-- **Design Approach:** Describe the approach you took to design your block construction program, explain all the key concepts of creating a valid block.
-- **Implementation Details:** Provide pseudo code of your implementation, including sequence of logic, algorithms and variables used etc.
-- **Results and Performance:** Present the results of your solution, and analyze the efficiency of your solution.
-- **Conclusion:** Discuss any insights gained from solving the problem, and outline potential areas for future improvement or research. Include a list of references or resources consulted during the problem-solving process.
+
 
 
 ## Design Approach
@@ -22,7 +18,17 @@ The design approach for this problem is to create a block construction program t
 
 ### The implementation of the block construction program involves the following steps:
 
-1. Create a Struct `Transaction` to represent a transaction. The structure of the transaction is as follows:
+#### Frequentlly used functions
+The `rustblock/src/utiles.rs` file contains the all functions that are used in the program. 
+Some frewuentlly used functions are as follows:
+- **double_sha256:** The function calculates the double SHA-256 hash of the input data.
+- **reverse_bytes:** The function reverses the bytes of the input data.
+- **convert_to_4bytes:** The function converts the input data to a 4-byte little-endian format.
+- **convert_to_8bytes:** The function converts the input data to a 8-byte little-endian format.
+- **merkle_root:** The function calculates the merkle root of the input data.
+
+
+1. Struct `Transaction` to represent a transaction. The structure of the transaction is as follows:
 ```
 pub struct Transaction {
     pub version: u32,
@@ -288,9 +294,9 @@ By following the above steps, the program is able to validate transactions, crea
 
 
 ## Results and Performance 
-The results of the solution are as follows: <span  style="color:red "> *98/100* </span>   score is achieved by validating the P2PKH and P2WPKH transactions. 
+The results of the solution are as follows: <span  style="color:red "> 98/100 </span>   score is achieved by validating the P2PKH and P2WPKH transactions. 
 
-The program took around  <span  style="color:red "> *60 sec* </span>  seconds to validate the transactions and mine them into a block. The program is able to validate around 8131 transactions and mine them into a block. The block contains the coinbase transaction and 3102 transactions. The block header and the serialized coinbase transaction are written to the `output.txt` file. The transaction IDs of the transactions mined in the block are also written to the `output.txt` file.
+The program took around  <span  style="color:red "> 55  </span>  seconds to validate the transactions and mine them into a block. The program is able to validate around 8131 transactions and mine them into a block. The block contains the coinbase transaction and 3102 transactions. The block header and the serialized coinbase transaction are written to the `output.txt` file. The transaction IDs of the transactions mined in the block are also written to the `output.txt` file.
 
 
 ## Conclusion

@@ -51,7 +51,7 @@ fn main() {
     }
 
     // sort the transactions by fees, max fees first
-    transactions.sort_by(|a, b| a.weight.cmp(&b.weight));
+    transactions.sort_by(|a, b| b.weight.cmp(&a.weight));
     transactions = validate_transactions(&transactions).clone();
 
     println!("{:?} { }", transactions.len(), x);
